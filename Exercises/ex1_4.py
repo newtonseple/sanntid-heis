@@ -1,25 +1,15 @@
-# Python 3.3.3 and 2.7.6
-# python helloworld_python.py
-
 from threading import Thread
-
 i = 0
-
-def someThreadFunction():
-    print("Hello from a thread!")
-
-# Potentially useful thing:
-#   In Python you "import" a global variable, instead of "export"ing it when you declare it
-#   (This is probably an effort to make you feel bad about typing the word "global")
+def thread_1_func():
     global i
-
-
+    for n in range(1000000): i += 1
+def thread_2_func():
+    global i
+    for n in range(1000000): i -= 1
 def main():
-    someThread = Thread(target = someThreadFunction, args = (),)
-    someThread.start()
-    
-    someThread.join()
-    print("Hello from main!")
-
-
+    threads = [Thread(target = thread_1_func, args = ()),
+               Thread(target = thread_2_func, args = ())]
+    for thread in threads: thread.start()
+    for thread in threads: thread.join()
+    print(i)
 main()
