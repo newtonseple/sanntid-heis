@@ -46,3 +46,6 @@ Problem 3
 	- subprocess/multiprocessing
 * What does func GOMAXPROCS(n int) int change?
 	- The maximum number of CPUs that can be executing simultaneously.
+
+Problem 4
+---------
