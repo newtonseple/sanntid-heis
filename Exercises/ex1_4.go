@@ -5,7 +5,7 @@ package main
 
 import (
     . "fmt"
- //   "runtime"
+    "runtime"
     "time"
 )
 
@@ -23,7 +23,7 @@ func thread_2_func() {
 
 
 func main() {
-    //runtime.GOMAXPROCS(runtime.NumCPU())    // I guess this is a hint to what GOMAXPROCS does...
+    runtime.GOMAXPROCS(runtime.NumCPU())    // I guess this is a hint to what GOMAXPROCS does...
                                             // Try doing the exercise both with and without it!
     go thread_1_func()                      // This spawns someGoroutine() as a goroutine
     go thread_2_func() 
