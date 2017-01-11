@@ -49,3 +49,4 @@ Problem 3
 
 Problem 4
 ---------
+Output is not (always) 0, because of non-atomic modification of memory.
