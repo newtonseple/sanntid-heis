@@ -8,9 +8,10 @@ fn main() {
     let thread_1 = thread::spawn(move || {
         for _ in 0..1000000 {
             unsafe {
-            i = i - 1;
+                i = i - 1;
+            }
         }
-        }});
+    });
 
     let thread_2 = thread::spawn(move || {
         for _ in 0..1000000 {
