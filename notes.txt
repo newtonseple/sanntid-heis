@@ -1,1 +1,92 @@
 Den som får knappetrykket delegerer ordre.
+Alle har samme ordreliste
+TCP sikrer samme data ved ordre
+	Ok-> ordre sendt
+	Fail-> Kast heisen av
+
+"Kast heisen av"
+	Annonser
+	Redeleger ordre etter deterministiske regler
+
+Heisenes posisjon kringkastes i 10Hz over TCP.
+Hvis en heis ikke svarer -> kast heisen av
+Hvis en heis ikke sender i et sekund -> kast heisen av
+
+Ved utføring av ordre
+Timeout -> kast seg selv av
+
+Jeg er blitt kastet av
+	Vent
+
+
+
+Network IF
+	If soneone doesn't ACK
+		Retry?
+		Network-send kill them
+	TCP_send
+	TCP_start_receiving
+	UDP_broadcast
+	UDP_start_receiving
+
+Peer manager
+	Beacon
+		loop:
+			Network-broadcasts alive
+
+	Watcher
+		Share alive list
+		Network-recieves alive
+		loop:
+			maintain list of alive peers (including self)
+			if someone times out: Network-send kill them
+
+Planner
+	Share order list
+	Share target
+	Network-recieves orders
+	Network-recieves elevator states
+	Recieves local new order signals
+	Recieves order request
+	on new order:
+		plan(orders, elevator_states) -> orders
+		Network-send orders
+		maintain target(orders, selfID)
+		update lights
+	on order delete:
+		delete order
+		Network-send orders
+		maintain target(orders, selfID)
+		update lights
+	on Network-recive order:
+		maintain target(orders, selfID)
+		update lights
+
+Worker
+	loop:
+		if target:
+			move toward target
+			if timeout:
+				Network-send kill self
+			if order in right direction:
+				open/close door
+				send order delete
+					to Planner
+
+Poller
+	loop:
+		get floor sensor signals
+		if new readings:
+			get alive-list from Watcher (shared)
+			Network-send to that list
+		get button signals
+		sends new order to Planner
+
+Driver
+	set_motor_direction(dirn)
+	set_button_lamp(button, floor, on/off)
+	set_floor_indicator(floor)
+	set_door_open_lamp(on/off)
+	get_floor_sensor_signal()
+	get_button_signal(button, floor)
+Elevator
