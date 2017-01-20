@@ -2,7 +2,7 @@ use std::thread;
 use std::sync::{Arc, Mutex};
 use std::sync::mpsc;
 
-
+/*
 fn main() {
     let i = Arc::new(Mutex::new(0));
 
@@ -27,42 +27,56 @@ fn main() {
     println!("hei", );
     println!("{}",*i.lock().unwrap());
 }
+*/
 
 
-/*
-// treg, og det hender at den krasjer. Usikker på hvem som eier i
-// fungerer neppe
+enum Cmd {
+    Inc,
+    Dec,
+    Fin,
+}
+
 fn main() {
-    let i = 0;
-    let (tx1, rx1) = mpsc::channel();
-    let (tx2, rx2) = mpsc::channel();
-    let tx1_c = tx1.clone();
-    let tx2_c = tx2.clone();
+    let mut i = 0;
+    let (server_tx, server_rx) = mpsc::channel();
+    let (fin_tx, fin_rx) = mpsc::channel();
+    let tx1 = server_tx.clone();
+    let tx2 = server_tx.clone();
 
-    let thread1 = thread::spawn(move || {
-        for _ in 0..1000000 {
-            let mut data = rx1.recv().unwrap();
-            println!("{}", i);
-            data += 1;
-            tx2_c.send(data).unwrap();
+    let _ = thread::spawn(move || {
+        let mut num_fin = 0;
+        loop {
+            if num_fin == 2 {
+                fin_tx.send(i).unwrap();
+                break;
+            }
+            match server_rx.recv().unwrap() {
+                Cmd::Inc => i += 1,
+                Cmd::Dec => i -= 1,
+                Cmd::Fin => num_fin += 1,
+            }
         }
     });
 
-    let thread2 = thread::spawn(move || {
+    let _ = thread::spawn(move || {
         for _ in 0..1000000 {
-            let mut data = rx2.recv().unwrap();
-            println!("{}", i);
-            data -= 1;
-            tx1_c.send(data).unwrap();
+            tx1.send(Cmd::Inc).unwrap();
         }
+        tx1.send(Cmd::Fin).unwrap();
     });
-    tx1.send(i).unwrap();
-    let _ = thread1.join();
-    let _ = thread2.join();
+
+    let _ = thread::spawn(move || {
+        for _ in 0..1000000 {
+            tx2.send(Cmd::Dec).unwrap();
+        }
+        tx2.send(Cmd::Fin).unwrap();
+    });
+
+    let i = fin_rx.recv().unwrap();
     println!("ferdig", );
     println!("{}", i);
 }
-*/
+
 
 /*
 // This is the `main` thread
