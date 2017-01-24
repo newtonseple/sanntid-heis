@@ -1,16 +1,16 @@
 extern crate libc;
 
-extern fn c_btoi(c_bool: i32) -> i32;
-
-
 #[repr(C)]
-enum c_bool_t {
-    FALSE,
-    TRUE,
+pub enum c_bool_t {
+    FALSE = 0,
+    TRUE = 1,
 }
 
+extern "C" {
+    pub fn c_btoi(c_bool: c_bool_t) -> i32;
+}
 
 fn main() {
-    println!("{}", unsafe { c_btoi(0) });
-    println!("{}", unsafe { c_btoi(1) });
+    println!("{}", unsafe { c_btoi(c_bool_t::FALSE) });
+    println!("{}", unsafe { c_btoi(c_bool_t::TRUE) });
 }
