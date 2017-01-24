@@ -26,3 +26,10 @@ pub enum elev_button_type_t {
     DOWN = 1,
     CAB = 2,
 }
+
+#[repr(C)]
+pub enum elev_motor_direction_t {
+    DOWN = -1,
+    STOP = 0,
+    UP = 1,
+}
