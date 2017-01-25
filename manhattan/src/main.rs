@@ -7,8 +7,8 @@ use manhattan::*;
 mod driver;
 
 fn main() {
-	driver::init();
 	driver::go_up();
+	driver::init();
 	driver::set_button_lamp(driver::elev_button_type_t::CAB, 0, 1);
 	driver::set_button_lamp(driver::elev_button_type_t::CAB, 1, 0);
 	driver::set_button_lamp(driver::elev_button_type_t::CAB, 2, 1);

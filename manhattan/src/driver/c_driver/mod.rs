@@ -1,10 +1,8 @@
 extern crate libc;
 
 
-
-//#[link(name = "driver", kind = "static")]
 extern "C" {
-    pub static N_FLOORS: libc::c_int;
+    pub static n_floors: libc::c_int;
 
     pub fn elev_init();
 

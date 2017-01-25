@@ -1,10 +1,12 @@
 // Wrapper for libComedi Elevator control.
 // These functions provide an interface to the elevators in the real time lab
-#pragma once
+#ifndef ELEV_H
+#define ELEV_H
 
 // Number of floors. Hardware-dependent, do not modify.
-//#define N_FLOORS 4
-const int N_FLOORS 4;
+#define N_FLOORS 4
+const int n_floors = N_FLOORS;
+
 
 // Number of buttons (and corresponding lamps) on a per-floor basis
 #define N_BUTTONS 3
@@ -38,3 +40,4 @@ int elev_get_obstruction_signal(void);
 
 
 
+#endif
