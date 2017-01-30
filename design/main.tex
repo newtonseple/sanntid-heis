@@ -1,0 +1,30 @@
+% !TEX root = main.tex
+
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{parskip} %skip the indent of a new paragraph.
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage[per-mode=symbol]{siunitx}
+\usepackage{epstopdf}
+\usepackage[super]{nth}
+\lstset{language=Matlab, frame=single, breaklines=true,numbers=left, keywordstyle=\color{blue},rulecolor=\color{black},commentstyle=\color{gray}}
+
+\usepackage{cleveref}
+\usepackage{todonotes}
+
+%% Brukes for tabeller (av likninger)
+\usepackage{tabularx}
+\def\tabularxcolumn#1{m{#1}}
+
+\newcommand{\mbf}[1]{\mathbf[#1]}
+\newcommand{\partialderiv}[2]{\frac{\partial{#1}}{\partial{#2}}} % prints partial derivative as a fraction
+
+\begin{document}
+    \input{titlepage.tex}
+\end{document}
