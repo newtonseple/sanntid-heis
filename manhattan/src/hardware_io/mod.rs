@@ -17,19 +17,23 @@ pub enum HwCommandMessage {
     SetMotorDirection { direction: elev_motor_direction_t },
 }
 
-pub fn run(hw_command_rx: mpsc::Receiver<HwCommandMessage>) -> thread::JoinHandle<()> {
+pub fn start(hw_command_rx: mpsc::Receiver<HwCommandMessage>) -> thread::JoinHandle<()> {
     thread::spawn(move || {
         init();
-        loop{
-            select! {
-                command_result = hw_command_rx.recv() => {
-                    match command_result.unwrap() {
-                        HwCommandMessage::SetButtonLamp{button_type, floor, value} => set_button_lamp(button_type, floor, value),
-                        HwCommandMessage::SetDoorOpenLamp{value} => set_door_open_lamp(value),
-                        HwCommandMessage::SetMotorDirection{direction} => set_motor_direction(direction)
+        loop {
+            if let Ok(command) = hw_command_rx.try_recv() {
+                match command {
+                    HwCommandMessage::SetButtonLamp { button_type, floor, value } => {
+                        set_button_lamp(button_type, floor, value)
+                    }
+                    HwCommandMessage::SetDoorOpenLamp { value } => set_door_open_lamp(value),
+                    HwCommandMessage::SetMotorDirection { direction } => {
+                        set_motor_direction(direction)
                     }
                 }
             }
+            //Autonomous behavour goes here!!
         }
+
     })
 }

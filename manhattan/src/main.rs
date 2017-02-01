@@ -16,7 +16,7 @@ fn main() {
     let (hw_command_tx, hw_command_rx): (mpsc::Sender<hardware_io::HwCommandMessage>,
                                          mpsc::Receiver<hardware_io::HwCommandMessage>) =
         mpsc::channel();
-    let hardware_io_thread = hardware_io::run(hw_command_rx);
+    let hardware_io_thread = hardware_io::start(hw_command_rx);
 
     let msg_test: hardware_io::HwCommandMessage =
         hardware_io::HwCommandMessage::SetDoorOpenLamp { value: true };
@@ -26,7 +26,7 @@ fn main() {
             direction: hardware_io::elev_motor_direction_t::UP,
         };
 
-    hw_command_tx.send(msg_test_motor).unwrap();
+    //hw_command_tx.send(msg_test_motor).unwrap();
 
     hardware_io_thread.join().unwrap();
     panic!("Exited the main thread!?");
