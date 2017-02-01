@@ -24,7 +24,9 @@ pub enum HwCommandMessage {
 }
 
 
-pub fn start(local_event_tx: mpsc::Sender<local_corntroller::LocalEventMessage>, add_order_tx: mpsc::channel<planner::Order>, hw_command_rx: mpsc::Receiver<HwCommandMessage>) -> thread::JoinHandle<()> {
+pub fn start(local_event_tx: mpsc::Sender<local_corntroller::LocalEventMessage>, 
+             add_order_tx: mpsc::channel<planner::Order>, 
+             hw_command_rx: mpsc::Receiver<HwCommandMessage>) -> thread::JoinHandle<()> {
     thread::spawn(move || {
         init();
         loop {
@@ -45,8 +47,30 @@ pub fn start(local_event_tx: mpsc::Sender<local_corntroller::LocalEventMessage>,
 
             for floor in 0..N_FLOORS {
                 if get_button_signal(elev_button_type_t::UP, floor) {
-
+                    add_order_tx.send({floor: floor, type: elev_button_type_t::Up}).unwrap();
                 }
+            }
+
+            for floor in 0..N_FLOORS {
+                if get_button_signal(elev_button_type_t::DOWN, floor) {
+                    add_order_tx.send({floor: floor, type: elev_button_type_t::DOWN}).unwrap();
+                }
+            }
+
+            for floor in 0..N_FLOORS {
+                if get_button_signal(elev_button_type_t::CAB, floor) {
+                    add_order_tx.send({floor: floor, type: elev_button_type_t::CAB}).unwrap();
+                }
+            }
+
+            // Input with unspesified behaviour
+            /*
+            if get_stop_signal() {
+                unimplemented!();
+            }
+
+            if get_obstruction_signal() {
+                unimplemented!();
             }
         }
 
