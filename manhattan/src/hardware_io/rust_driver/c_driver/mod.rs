@@ -2,7 +2,7 @@ extern crate libc;
 
 
 extern "C" {
-    pub static n_floors: libc::c_int;
+    //pub static n_floors: libc::c_int;
 
     pub fn elev_init();
 
@@ -35,3 +35,7 @@ pub enum elev_motor_direction_t {
     STOP = 0,
     UP = 1,
 }
+
+
+//This should be the same as N_FLOORS defined in elev.h
+pub const N_FLOORS: i32 = 4;

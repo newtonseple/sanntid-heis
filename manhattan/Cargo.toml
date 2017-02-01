@@ -1,6 +1,6 @@
 [package]
 name = "manhattan"
-version = "0.1.142857142857142857"
+version = "0.1.2857142857142857"
 authors = ["REDACTED"]
 build = "build.rs"
 

@@ -1,19 +1,33 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
+#![allow(unused_variables)]
+//#![allow(non_camel_case_types)]
+#![allow(safe_extern_statics)]
+#![feature(mpsc_select)]
 
-extern crate manhattan;
-use manhattan::*;
 
-mod driver;
+use std::thread;
+use std::sync::mpsc;
+
+mod hardware_io;
 
 fn main() {
-	driver::go_up();
-	driver::init();
-	driver::set_button_lamp(driver::elev_button_type_t::CAB, 0, 1);
-	driver::set_button_lamp(driver::elev_button_type_t::CAB, 1, 0);
-	driver::set_button_lamp(driver::elev_button_type_t::CAB, 2, 1);
-	driver::set_button_lamp(driver::elev_button_type_t::CAB, 3, 0);
-	driver::set_floor_indicator(2);
-	println!("{}", driver::get_obstruction_signal());
-	//driver::test_run();
+    println!("Running");
+    let (hw_command_tx, hw_command_rx): (mpsc::Sender<hardware_io::HwCommandMessage>,
+                                         mpsc::Receiver<hardware_io::HwCommandMessage>) =
+        mpsc::channel();
+    let hardware_io_thread = hardware_io::run(hw_command_rx);
+
+    let msg_test: hardware_io::HwCommandMessage =
+        hardware_io::HwCommandMessage::SetDoorOpenLamp { value: true };
+
+    let msg_test_motor: hardware_io::HwCommandMessage =
+        hardware_io::HwCommandMessage::SetMotorDirection {
+            direction: hardware_io::elev_motor_direction_t::UP,
+        };
+
+    hw_command_tx.send(msg_test_motor).unwrap();
+
+    hardware_io_thread.join().unwrap();
+    panic!("Exited the main thread!?");
 }
