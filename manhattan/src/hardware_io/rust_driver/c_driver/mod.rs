@@ -22,6 +22,7 @@ extern "C" {
     pub fn test_run() -> libc::c_int;
 }
 
+#[derive(PartialEq)]
 #[repr(C)]
 pub enum OrderType {
     UP = 0,

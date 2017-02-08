@@ -2,9 +2,6 @@
 use std::sync::mpsc;
 use std::thread;
 
-//mod ROOT.local_controller;
-//use super::local_controller;
-//mod planner;
 use planner;
 use local_controller;
 
@@ -53,7 +50,7 @@ pub fn start(local_event_tx: mpsc::Sender<local_controller::LocalEventMessage>,
             if floor_sensor_result != -1 {
                 local_event_tx.send(local_controller::LocalEventMessage::ArrivedAtFloor {
                     floor: floor_sensor_result,
-                });
+                }).unwrap();
             }
 
             for floor in 0..N_FLOORS {
