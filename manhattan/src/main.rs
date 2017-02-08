@@ -10,24 +10,28 @@ use std::thread;
 use std::sync::mpsc;
 
 mod hardware_io;
+mod planner;
+mod local_controller;
+mod network;
+
 
 fn main() {
     println!("Running");
     let (hw_command_tx, hw_command_rx): (mpsc::Sender<hardware_io::HwCommandMessage>,
                                          mpsc::Receiver<hardware_io::HwCommandMessage>) =
         mpsc::channel();
-    let hardware_io_thread = hardware_io::start(hw_command_rx);
+    //let hardware_io_thread = hardware_io::start(hw_command_rx);
 
     let msg_test: hardware_io::HwCommandMessage =
         hardware_io::HwCommandMessage::SetDoorOpenLamp { value: true };
 
     let msg_test_motor: hardware_io::HwCommandMessage =
         hardware_io::HwCommandMessage::SetMotorDirection {
-            direction: hardware_io::elev_motor_direction_t::UP,
+            direction: hardware_io::MotorDirection::UP,
         };
 
     //hw_command_tx.send(msg_test_motor).unwrap();
 
-    hardware_io_thread.join().unwrap();
+    //hardware_io_thread.join().unwrap();
     panic!("Exited the main thread!?");
 }

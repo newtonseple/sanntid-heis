@@ -1,8 +1,16 @@
 mod c_driver;
 
-pub use self::c_driver::elev_button_type_t;
-pub use self::c_driver::elev_motor_direction_t;
-pub use self::c_driver::N_FLOORS; // Is this needed? As pub?
+
+pub use self::c_driver::N_FLOORS;
+
+pub use self::c_driver::OrderType;
+pub use self::c_driver::MotorDirection;
+
+//pub type OrderType = elev_button_type_t;
+
+//pub type MotorDirection = elev_motor_direction_t;
+
+//TODO: change ifs to asserts
 
 pub fn init() {
     unsafe {
@@ -10,14 +18,14 @@ pub fn init() {
     }
 }
 
-pub fn set_motor_direction(direction: elev_motor_direction_t) {
+pub fn set_motor_direction(direction: MotorDirection) {
     unsafe {
         c_driver::elev_set_motor_direction(direction);
     }
 }
 
-pub fn set_button_lamp(button: elev_button_type_t, floor: i32, value: bool) {
-    if floor > 0 && floor < N_FLOORS {
+pub fn set_button_lamp(button: OrderType, floor: i32, value: bool) {
+    if floor > 0 && floor < N_FLOORS as i32 {
         unsafe {
             c_driver::elev_set_button_lamp(button, floor, value as i32);
         }
@@ -27,7 +35,7 @@ pub fn set_button_lamp(button: elev_button_type_t, floor: i32, value: bool) {
 }
 
 pub fn set_floor_indicator(floor: i32) {
-    if floor > 0 && floor < N_FLOORS {
+    if floor > 0 && floor < N_FLOORS as i32 {
         unsafe {
             c_driver::elev_set_floor_indicator(floor);
         }
@@ -49,8 +57,8 @@ pub fn set_stop_lamp(value: bool) {
 }
 
 
-pub fn get_button_signal(button: elev_button_type_t, floor: i32) -> bool {
-    if floor > 0 && floor < N_FLOORS {
+pub fn get_button_signal(button: OrderType, floor: i32) -> bool {
+    if floor > 0 && floor < N_FLOORS as i32 {
         unsafe { c_driver::elev_get_button_signal(button, floor) != 0 }
     } else {
         panic!("Tried to get a button signal in a nonexisting floor")
