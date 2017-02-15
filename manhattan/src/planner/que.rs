@@ -12,31 +12,31 @@ struct ElevatorData {
     down_orders: [bool; N_FLOORS as usize],
     cab_orders: [bool; N_FLOORS as usize],
     floor: i32,
-    Direction: ServiceDirection,
+    direction: ServiceDirection,
 }
 
 impl ElevatorData {
     pub fn set_order(&mut self, order_type: OrderType, floor: i32, value: bool) {
         match order_type {
-            UpOrder => self.up_orders[floor as usize] = true,
-            DownOrder => self.down_orders[floor as usize] = true,
-            CabOrder => self.cab_orders[floor as usize] = true,
+            OrderType::UP => self.up_orders[floor as usize] = true,
+            OrderType::DOWN => self.down_orders[floor as usize] = true,
+            OrderType::CAB => self.cab_orders[floor as usize] = true,
         }
     }
 
     pub fn update_state(&mut self, new_floor: i32, new_direction: ServiceDirection) {
         self.floor = new_floor;
-        self.Direction = new_direction;
+        self.direction = new_direction;
     }
     pub fn get_order_cost(&self, floor: i32, order_type: OrderType) -> i32 {
         let distance = (self.floor - floor).abs();
-        let toward_order = self.floor < floor && self.Direction == ServiceDirection::UP ||
-                           self.floor > floor && self.Direction == ServiceDirection::DOWN;
+        let toward_order = self.floor < floor && self.direction == ServiceDirection::UP ||
+                           self.floor > floor && self.direction == ServiceDirection::DOWN;
         let same_direction =
-            (order_type == OrderType::UP && self.Direction == ServiceDirection::UP) ||
-            (order_type == OrderType::DOWN && self.Direction == ServiceDirection::UP);
+            (order_type == OrderType::UP && self.direction == ServiceDirection::UP) ||
+            (order_type == OrderType::DOWN && self.direction == ServiceDirection::UP);
 
-        if self.Direction == ServiceDirection::IDLE {
+        if self.direction == ServiceDirection::IDLE {
             return (self.floor - floor).abs();
         } else if !toward_order {
             return N_FLOORS - 1;
@@ -52,16 +52,16 @@ impl ElevatorData {
     
     //TODO: Merge into get_local_command
     fn get_new_service_direction(&self) -> ServiceDirection {
-        if self.Direction == ServiceDirection::DOWN && self.SearchUnder(self.floor) {
+        if self.direction == ServiceDirection::DOWN && self.search_below(self.floor) {
 		    return ServiceDirection::DOWN;
 	    }
-	    else if self.Direction == ServiceDirection::UP && self.SearchOver(self.floor) {
+	    else if self.direction == ServiceDirection::UP && self.search_above(self.floor) {
 	    	return ServiceDirection::UP;
 	    }
-	    else if self.Direction == ServiceDirection::UP && self.SearchUnder(self.floor) {
+	    else if self.direction == ServiceDirection::UP && self.search_below(self.floor) {
 	    	return ServiceDirection::DOWN;
 	    }	
-	    else if self.Direction == ServiceDirection::DOWN && self.SearchOver(self.floor) {
+	    else if self.direction == ServiceDirection::DOWN && self.search_above(self.floor) {
 	    	return ServiceDirection::UP;
 	    } else { 
             return ServiceDirection::IDLE;
@@ -74,12 +74,12 @@ impl ElevatorData {
 		if self.cab_orders[self.floor as usize] == true 
         || self.down_orders[self.floor as usize] == true 
         || self.floor == 0 
-        || self.SearchUnder(self.floor - 1) == false {
+        || self.search_below(self.floor - 1) == false {
 			return true;
 		}
 	}
 	else if direction == OrderType::UP {
-		if self.cab_orders[self.floor as usize] == true || self.up_orders[self.floor as usize] == true || self.floor == N_FLOORS- 1 || self.SearchOver(self.floor + 1) == false {
+		if self.cab_orders[self.floor as usize] == true || self.up_orders[self.floor as usize] == true || self.floor == N_FLOORS- 1 || self.search_above(self.floor + 1) == false {
 			return true;
 		}
 	}
@@ -87,7 +87,7 @@ impl ElevatorData {
     }
 
 
-    fn SearchOver(&self,floor: i32) -> bool
+    fn search_above(&self,floor: i32) -> bool
     {
 	let mut i = floor as usize;
 	while i < N_FLOORS as usize {
@@ -99,7 +99,7 @@ impl ElevatorData {
 	return false;
     }
 
-    fn SearchUnder(&self,floor: i32) -> bool
+    fn search_below(&self,floor: i32) -> bool
     {
 	let mut i = floor;
 	while i >= 0 {

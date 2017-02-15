@@ -16,11 +16,15 @@ mod network;
 
 
 fn main() {
-    println!("Running");
+    println!("Starting modules...");
+    let (local_event_tx, local_event_rx): (mpsc::Sender<local_controller::LocalEventMessage>,
+                                           mpsc::Receiver<local_controller::LocalEventMessage>) = mpsc::channel();
+    let (add_order_tx, add_order_rx): (mpsc::Sender<planner::Order>,
+                                       mpsc::Receiver<planner::Order>) = mpsc::channel();
     let (hw_command_tx, hw_command_rx): (mpsc::Sender<hardware_io::HwCommandMessage>,
-                                         mpsc::Receiver<hardware_io::HwCommandMessage>) =
-        mpsc::channel();
-    //let hardware_io_thread = hardware_io::start(hw_command_rx);
+                                         mpsc::Receiver<hardware_io::HwCommandMessage>) = mpsc::channel();
+
+    let hardware_io_thread = hardware_io::start(local_event_tx, add_order_tx, hw_command_rx);
 
     let msg_test: hardware_io::HwCommandMessage =
         hardware_io::HwCommandMessage::SetDoorOpenLamp { value: true };
@@ -30,8 +34,8 @@ fn main() {
             direction: hardware_io::MotorDirection::UP,
         };
 
-    //hw_command_tx.send(msg_test_motor).unwrap();
+    hw_command_tx.send(msg_test_motor).unwrap();
 
-    //hardware_io_thread.join().unwrap();
+    hardware_io_thread.join().unwrap();
     panic!("Exited the main thread!?");
 }

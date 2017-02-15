@@ -28,8 +28,8 @@ pub enum RecievedMessage {
 }
 
 pub struct Order {
-    pub Floor: i32,
-    pub OrderType: hardware_io::OrderType,
+    pub floor: i32,
+    pub order_type: hardware_io::OrderType,
 }
 
 pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,

@@ -33,6 +33,7 @@ pub fn start(local_event_tx: mpsc::Sender<local_controller::LocalEventMessage>,
         init();
         loop {
             if let Ok(command) = hw_command_rx.try_recv() {
+                println!("Got hw_command");
                 match command {
                     HwCommandMessage::SetButtonLamp { button_type, floor, value } => {
                         set_button_lamp(button_type, floor, value)
@@ -56,8 +57,8 @@ pub fn start(local_event_tx: mpsc::Sender<local_controller::LocalEventMessage>,
             for floor in 0..N_FLOORS {
                 if get_button_signal(OrderType::UP, floor) {
                     add_order_tx.send(planner::Order {
-                            Floor: floor,
-                            OrderType: OrderType::UP,
+                            floor: floor,
+                            order_type: OrderType::UP,
                         })
                         .unwrap();
                 }
@@ -66,8 +67,8 @@ pub fn start(local_event_tx: mpsc::Sender<local_controller::LocalEventMessage>,
             for floor in 0..N_FLOORS {
                 if get_button_signal(OrderType::DOWN, floor) {
                     add_order_tx.send(planner::Order {
-                            Floor: floor,
-                            OrderType: OrderType::DOWN,
+                            floor: floor,
+                            order_type: OrderType::DOWN,
                         })
                         .unwrap();
                 }
@@ -76,8 +77,8 @@ pub fn start(local_event_tx: mpsc::Sender<local_controller::LocalEventMessage>,
             for floor in 0..N_FLOORS {
                 if get_button_signal(OrderType::CAB, floor) {
                     add_order_tx.send(planner::Order {
-                            Floor: floor,
-                            OrderType: OrderType::CAB,
+                            floor: floor,
+                            order_type: OrderType::CAB,
                         })
                         .unwrap();
                 }
@@ -88,30 +89,11 @@ pub fn start(local_event_tx: mpsc::Sender<local_controller::LocalEventMessage>,
             if get_stop_signal() {
                 unimplemented!();
             }
-
             if get_obstruction_signal() {
                 unimplemented!();
             }
             */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         }
-
     })
 }
