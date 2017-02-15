@@ -61,7 +61,8 @@ pub fn get_button_signal(button: OrderType, floor: i32) -> bool {
     if floor >= 0 && floor < N_FLOORS as i32 {
         unsafe { c_driver::elev_get_button_signal(button, floor) != 0 }
     } else {
-        panic!("Tried to get a button signal in a nonexisting floor, {}",floor)
+        panic!("Tried to get a button signal in a nonexisting floor, {}",
+               floor)
     }
 }
 
