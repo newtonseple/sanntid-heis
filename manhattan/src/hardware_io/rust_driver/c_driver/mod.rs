@@ -7,9 +7,7 @@ extern "C" {
     pub fn elev_init();
 
     pub fn elev_set_motor_direction(dirn: MotorDirection);
-    pub fn elev_set_button_lamp(button: OrderType,
-                                floor: libc::c_int,
-                                value: libc::c_int);
+    pub fn elev_set_button_lamp(button: OrderType, floor: libc::c_int, value: libc::c_int);
     pub fn elev_set_floor_indicator(floor: libc::c_int);
     pub fn elev_set_door_open_lamp(value: libc::c_int);
     pub fn elev_set_stop_lamp(value: libc::c_int);

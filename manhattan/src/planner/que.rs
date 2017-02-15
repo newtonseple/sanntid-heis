@@ -1,7 +1,7 @@
 use hardware_io::{OrderType, N_FLOORS};
 
 #[derive(PartialEq)]
-enum ServiceDirection {
+pub enum ServiceDirection {
     UP,
     DOWN,
     IDLE,
@@ -46,68 +46,66 @@ impl ElevatorData {
             return distance;
         }
     }
-    pub fn get_local_command(){
+    pub fn get_local_command() {
         unimplemented!();
     }
-    
+
     //TODO: Merge into get_local_command
     fn get_new_service_direction(&self) -> ServiceDirection {
         if self.direction == ServiceDirection::DOWN && self.search_below(self.floor) {
-		    return ServiceDirection::DOWN;
-	    }
-	    else if self.direction == ServiceDirection::UP && self.search_above(self.floor) {
-	    	return ServiceDirection::UP;
-	    }
-	    else if self.direction == ServiceDirection::UP && self.search_below(self.floor) {
-	    	return ServiceDirection::DOWN;
-	    }	
-	    else if self.direction == ServiceDirection::DOWN && self.search_above(self.floor) {
-	    	return ServiceDirection::UP;
-	    } else { 
+            return ServiceDirection::DOWN;
+        } else if self.direction == ServiceDirection::UP && self.search_above(self.floor) {
+            return ServiceDirection::UP;
+        } else if self.direction == ServiceDirection::UP && self.search_below(self.floor) {
+            return ServiceDirection::DOWN;
+        } else if self.direction == ServiceDirection::DOWN && self.search_above(self.floor) {
+            return ServiceDirection::UP;
+        } else {
             return ServiceDirection::IDLE;
         }
     }
 
     //TODO: Merge into get_local_command
     fn get_order_in_floor(&self, direction: OrderType) -> bool {
-	if direction == OrderType::DOWN {
-		if self.cab_orders[self.floor as usize] == true 
-        || self.down_orders[self.floor as usize] == true 
-        || self.floor == 0 
-        || self.search_below(self.floor - 1) == false {
-			return true;
-		}
-	}
-	else if direction == OrderType::UP {
-		if self.cab_orders[self.floor as usize] == true || self.up_orders[self.floor as usize] == true || self.floor == N_FLOORS- 1 || self.search_above(self.floor + 1) == false {
-			return true;
-		}
-	}
-	return false;
+        if direction == OrderType::DOWN {
+            if self.cab_orders[self.floor as usize] == true ||
+               self.down_orders[self.floor as usize] == true || self.floor == 0 ||
+               self.search_below(self.floor - 1) == false {
+                return true;
+            }
+        } else if direction == OrderType::UP {
+            if self.cab_orders[self.floor as usize] == true ||
+               self.up_orders[self.floor as usize] == true ||
+               self.floor == N_FLOORS - 1 ||
+               self.search_above(self.floor + 1) == false {
+                return true;
+            }
+        }
+        return false;
     }
 
 
-    fn search_above(&self,floor: i32) -> bool
-    {
-	let mut i = floor as usize;
-	while i < N_FLOORS as usize {
-		if self.up_orders[i] == true || self.cab_orders[i] == true || self.down_orders[i] == true {
-			return true;
-		}
-		i += 1;
-	}
-	return false;
+    fn search_above(&self, floor: i32) -> bool {
+        let mut i = floor as usize;
+        while i < N_FLOORS as usize {
+            if self.up_orders[i] == true || self.cab_orders[i] == true ||
+               self.down_orders[i] == true {
+                return true;
+            }
+            i += 1;
+        }
+        return false;
     }
 
-    fn search_below(&self,floor: i32) -> bool
-    {
-	let mut i = floor;
-	while i >= 0 {
-		if self.up_orders[i as usize] == true || self.cab_orders[i as usize] == true || self.down_orders[i as usize] == true {
-			return true;
-		}
-		i -= 1;
-	}
-	return false;
-}
+    fn search_below(&self, floor: i32) -> bool {
+        let mut i = floor;
+        while i >= 0 {
+            if self.up_orders[i as usize] == true || self.cab_orders[i as usize] == true ||
+               self.down_orders[i as usize] == true {
+                return true;
+            }
+            i -= 1;
+        }
+        return false;
+    }
 }
