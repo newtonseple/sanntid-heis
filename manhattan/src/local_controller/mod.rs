@@ -1,3 +1,5 @@
+use std::sync::mpsc;
+use std::thread;
 
 pub enum LocalEventMessage {
     TimerTick,
@@ -8,9 +10,7 @@ pub fn start(local_event_rx: mpsc::Receiver<LocalEventMessage>) -> thread::JoinH
     thread::spawn(move || loop {
         select! {
     		local_event_result = local_event_rx.recv() => {
-    			match local_event_result.unwrap() {
-    				unimplemented!()
-    			}
+    				unimplemented!();
     		}
     	}
     })
