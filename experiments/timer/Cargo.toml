@@ -1,11 +1,6 @@
 [package]
-name = "ffi"
+name = "timer"
 version = "0.1.0"
 authors = ["Didrik Rokhaug <didrik.rokhaug@gmail.com>"]
-build = "build.rs"
 
 [dependencies]
-libc = "0.2.0"
-
-[build-dependencies]
-gcc = "0.3"

@@ -41,6 +41,7 @@ void elev_init(void) {
     elev_set_stop_lamp(0);
     elev_set_door_open_lamp(0);
     elev_set_floor_indicator(0);
+    elev_set_motor_direction(DIRN_STOP);
 }
 
 
