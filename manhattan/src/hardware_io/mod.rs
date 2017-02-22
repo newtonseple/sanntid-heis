@@ -51,14 +51,15 @@ pub fn start(local_event_tx: mpsc::Sender<local_controller::LocalEventMessage>,
 
             // Poll all hardware inputs
 
-            let floor_sensor_result = get_floor_sensor_signal();
-            if floor_sensor_result != -1 && floor_sensor_result != floor_already_reached {
-                local_event_tx.send(local_controller::LocalEventMessage::ArrivedAtFloor {
-                        floor: floor_sensor_result,
-                    })
-                    .unwrap();
-            }
-            floor_already_reached = floor_sensor_result;
+            if let Some(floor_sensor_result) = get_floor_sensor_signal() {
+                if floor_sensor_result != floor_already_reached {
+                    local_event_tx.send(local_controller::LocalEventMessage::ArrivedAtFloor {
+                            floor: floor_sensor_result,
+                        })
+                        .unwrap();
+                    }
+                    floor_already_reached = floor_sensor_result;
+                }
 
             for floor in 0..N_FLOORS {
                 if get_button_signal(OrderType::UP, floor) {

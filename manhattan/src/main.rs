@@ -5,6 +5,15 @@
 #![allow(safe_extern_statics)]
 #![feature(mpsc_select)]
 
+#[macro_use]
+extern crate lazy_static;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
+extern crate net2;
+extern crate rand;
+extern crate chrono;
 
 use std::thread;
 use std::sync::mpsc;
@@ -35,6 +44,9 @@ fn main() {
                                         local_command_request_rx,
                                         local_command_tx);
     let local_controller_thread = local_controller::start(local_event_rx, hw_command_tx.clone(), send_message_tx.clone(), local_command_request_tx, local_command_rx); //LOCAL CTRL IX COMPLETE
+
+    let network_thread = network::start(send_message_rx, message_recieved_tx, peer_update_tx);
+
 
     let msg_test: hardware_io::HwCommandMessage =
         hardware_io::HwCommandMessage::SetDoorOpenLamp { value: true };

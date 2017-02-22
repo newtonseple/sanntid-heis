@@ -35,12 +35,9 @@ pub fn set_button_lamp(button: OrderType, floor: i32, value: bool) {
 }
 
 pub fn set_floor_indicator(floor: i32) {
-    if floor > 0 && floor < N_FLOORS as i32 {
-        unsafe {
-            c_driver::elev_set_floor_indicator(floor);
-        }
-    } else {
-        panic!("Tried to set the floor indicator in a nonexisting floor!")
+    assert!(floor > 0 && floor < N_FLOORS as i32, "Tried to set the floor in {}th floor (floor not existing)", floor);
+    unsafe {
+        c_driver::elev_set_floor_indicator(floor);
     }
 }
 
@@ -67,8 +64,13 @@ pub fn get_button_signal(button: OrderType, floor: i32) -> bool {
 }
 
 // returns the floor (0-indexed) or -1 if the carriage is between floors
-pub fn get_floor_sensor_signal() -> i32 {
-    unsafe { c_driver::elev_get_floor_sensor_signal() }
+pub fn get_floor_sensor_signal() -> Option<i32> {
+    let result = unsafe { c_driver::elev_get_floor_sensor_signal() };
+    if result != -1 {
+        Some(result)
+    } else {
+        None
+    }
 }
 
 pub fn get_stop_signal() -> bool {
