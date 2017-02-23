@@ -4,8 +4,6 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 
-use serde::Serialize;
-use serde::Deserialize;
 
 #[derive(Serialize)]
 #[derive(Deserialize)]
