@@ -9,7 +9,7 @@ use serde::Deserialize;
 
 #[derive(Serialize)]
 #[derive(Deserialize)]
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum SomeEnum {
     Foo,
     Bar(i32),
@@ -17,7 +17,7 @@ enum SomeEnum {
     Boo { c: SomeStruct },
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 struct SomeStruct {
     a: i32,
     b: bool,
@@ -50,4 +50,8 @@ fn main() {
     println!("bd: {:?}", bd);
     println!("cd: {:?}", cd);
     println!("dd: {:?}", dd);
+    assert_eq!(a, ad.unwrap());
+    assert_eq!(b, bd.unwrap());
+    assert_eq!(c, cd.unwrap());
+    assert_eq!(d, dd.unwrap());
 }
