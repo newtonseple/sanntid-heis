@@ -1,12 +1,37 @@
-
 use std::io;
-use std::net::UdpSocket;
+use std::net::{UdpSocket, IpAddr};
 use std::str::from_utf8;
 use std::sync::mpsc;
 
 use serde;
 use serde_json;
 use net2::UdpBuilder;
+
+use hardware_io;
+use network::get_localip;
+#[derive(Serialize, Deserialize, Debug)]
+pub enum SendMessageCommand {
+    OrderComplete {
+        order_type: hardware_io::OrderType,
+        floor: i32,
+    },
+    StateUpdate {
+        direction: hardware_io::OrderType,
+        floor: i32,
+    },
+    NewOrder {
+        order_type: hardware_io::OrderType,
+        floor: i32,
+        id: String,
+    }, // usize for use in array indexing, other types might be more appropriate
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Packet<T, G> where T: serde::ser::Serialize, 
+                          G: serde::ser::Serialize {
+    id: G,
+    data: T,
+}
 
 pub struct BcastTransmitter {
     conn: UdpSocket,
@@ -36,8 +61,10 @@ impl BcastTransmitter {
     pub fn run<T>(self, bcast_rx: mpsc::Receiver<T>) -> !
         where T: serde::ser::Serialize
     {
+        let self_id = get_localip().unwrap();
         loop {
-            let msg = bcast_rx.recv().unwrap();
+            let msg_data = bcast_rx.recv().unwrap();
+            let msg = Packet{id: self_id, data: msg_data};
             self.transmit(&msg).expect("Transmission of data failed for BcastTransmitter");
         }
     }

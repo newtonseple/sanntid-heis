@@ -32,6 +32,7 @@ fn main() {
     let (send_message_tx, send_message_rx) = mpsc::channel();
     let (message_recieved_tx, message_recieved_rx) = mpsc::channel();
     let (peer_update_tx, peer_update_rx) = mpsc::channel();
+    let (i_am_stuck_tx, i_am_stuck_rx) = mpsc::channel();
     let (local_command_tx, local_command_rx) = mpsc::sync_channel(0);
     let (local_command_request_tx, local_command_request_rx) = mpsc::sync_channel(0);
 
@@ -43,9 +44,9 @@ fn main() {
                                         message_recieved_rx,
                                         local_command_request_rx,
                                         local_command_tx);
-    let local_controller_thread = local_controller::start(local_event_rx, hw_command_tx.clone(), send_message_tx.clone(), local_command_request_tx, local_command_rx); //LOCAL CTRL IX COMPLETE
+    let local_controller_thread = local_controller::start(local_event_rx, hw_command_tx.clone(), send_message_tx.clone(), local_command_request_tx, i_am_stuck_tx, local_command_rx); //LOCAL CTRL IX COMPLETE
 
-    let network_thread = network::start(send_message_rx, message_recieved_tx, peer_update_tx);
+    let network_thread = network::start(send_message_rx, i_am_stuck_rx, message_recieved_tx, peer_update_tx);
 
 
     let msg_test: hardware_io::HwCommandMessage =

@@ -73,13 +73,13 @@ impl<T: fmt::Display> fmt::Display for PeerUpdate<T> {
         }
         match self.lost.len() {
             0 => try!(write!(f, "\tlost:  []\n")),
-            1 => try!(write!(f, "\tlost:  [{}]\n", self.peers[0])),
+            1 => try!(write!(f, "\tlost:  [{}]\n", self.lost[0])),
             n @ _ => {
-                try!(write!(f, "\tlost:  [{},\n", self.peers[0]));
+                try!(write!(f, "\tlost:  [{},\n", self.lost[0]));
                 for i in 1..n - 1 {
-                    try!(write!(f, "\t        {},\n", self.peers[i]));
+                    try!(write!(f, "\t        {},\n", self.lost[i]));
                 }
-                try!(write!(f, "\t        {}]\n", self.peers[n - 1]));
+                try!(write!(f, "\t        {}]\n", self.lost[n - 1]));
             }
         }
         Ok(())
@@ -125,12 +125,12 @@ impl PeerTransmitter {
         Ok(())
     }
 
-    pub fn run<'a, T>(self, peer_update_hold_rx: mpsc::Receiver<()>, data: &'a T) -> !
+    pub fn run<'a, T>(self, i_am_stuck_rx: mpsc::Receiver<()>, data: &'a T) -> !
         where T: serde::ser::Serialize {
         loop {
             thread::sleep(Duration::new(0, INTERVAL_NS));
             
-            if let Some(_) = peer_update_hold_rx.try_iter().last() {
+            if let Some(_) = i_am_stuck_rx.try_iter().last() {
                 thread::sleep(Duration::from_millis(1000));
             }
 
@@ -168,7 +168,7 @@ impl PeerReceiver {
         let mut buf = [0u8; 256];
         let (amt, _) = try!(self.conn.recv_from(&mut buf));
         let msg = from_utf8(&buf[..amt]).unwrap();
-        Ok(serde_json::from_str(&msg).unwrap())
+        Ok(serde_json::from_str(&msg).expect(format!("deser failed: {}",msg).as_str()))
     }
 
     pub fn run<T>(self, update_tx: mpsc::Sender<PeerUpdate<T>>) -> !
@@ -180,6 +180,7 @@ impl PeerReceiver {
             let mut updated = false;
 
             self.conn.set_read_timeout(Some(Duration::new(0, TIMEOUT_NS))).unwrap();
+
             let new_id: T = match self.receive() {
                 Ok(id) => id,
                 Err(err) => {
@@ -187,7 +188,7 @@ impl PeerReceiver {
                     continue;
                 }
             };
-
+            
             // Adding new connection
             if !last_seen.contains_key(&new_id) {
                 peer_update.set_new(new_id.clone());
@@ -212,7 +213,7 @@ impl PeerReceiver {
                     peer_update.add_peers(id.clone());
                 }
                 peer_update.sort();
-                update_tx.send(peer_update).unwrap();
+                update_tx.send(peer_update).expect("Could not send peer update");
             }
         }
     }

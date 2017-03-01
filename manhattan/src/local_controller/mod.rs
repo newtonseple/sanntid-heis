@@ -21,9 +21,10 @@ pub fn start(local_event_rx: mpsc::Receiver<LocalEventMessage>,
              hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
              send_message_tx: mpsc::Sender<network::SendMessageCommand>,
              local_command_request_tx: mpsc::SyncSender<planner::LocalCommandRequestMessage>,
+             i_am_stuck_tx: mpsc::Sender<()>,
              local_command_rx: mpsc::Receiver<LocalCommandMessage>)
              -> thread::JoinHandle<()> {
-    thread::spawn(move || loop {
+    thread::Builder::new().name("local_controller".to_string()).spawn(move || loop {
         select! {
     		local_event_result = local_event_rx.recv() => {
     				let local_event = local_event_result.unwrap();
@@ -37,5 +38,5 @@ pub fn start(local_event_rx: mpsc::Receiver<LocalEventMessage>,
     				}
     		}
     	}
-    })
+    }).expect("Failed to start thread")
 }

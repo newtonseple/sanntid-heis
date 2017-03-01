@@ -58,6 +58,7 @@ fn main() {
             .run(receive_tx);
     });
 
+
     // Spawn user interface
     thread::spawn(move|| {
         loop {

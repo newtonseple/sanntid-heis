@@ -1,6 +1,6 @@
 [root]
 name = "manhattan"
-version = "0.1.2857142857142857"
+version = "0.1.28571428571428571"
 dependencies = [
  "chrono 0.2.25 (registry+https://github.com/rust-lang/crates.io-index)",
  "gcc 0.3.41 (registry+https://github.com/rust-lang/crates.io-index)",
