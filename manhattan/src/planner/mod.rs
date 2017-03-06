@@ -5,9 +5,9 @@ use hardware_io;
 use network;
 use local_controller;
 
-mod que;
+mod queue;
 
-pub use self::que::ServiceDirection;
+pub use self::queue::ServiceDirection;
 /*
 pub enum PeerUpdate {
     NewPeer(i32), // see ----------------------------------------------------\/

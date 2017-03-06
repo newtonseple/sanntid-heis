@@ -1,4 +1,5 @@
 use hardware_io::{OrderType, N_FLOORS};
+use local_controller::LocalCommandMessage;
 
 #[derive(PartialEq)]
 pub enum ServiceDirection {
@@ -28,6 +29,7 @@ impl ElevatorData {
         self.floor = new_floor;
         self.direction = new_direction;
     }
+
     pub fn get_order_cost(&self, floor: i32, order_type: OrderType) -> i32 {
         let distance = (self.floor - floor).abs();
         let toward_order = self.floor < floor && self.direction == ServiceDirection::UP ||
@@ -46,11 +48,47 @@ impl ElevatorData {
             return distance;
         }
     }
-    pub fn get_local_command() {
-        unimplemented!();
-    }
 
-    //TODO: Merge into get_local_command
+    pub fn get_local_command(&self) -> LocalCommandMessage {
+        if self.direction == ServiceDirection::DOWN {
+            if self.cab_orders[self.floor as usize] == true ||
+               self.down_orders[self.floor as usize] == true {
+                return LocalCommandMessage::StopForOrder{order_type: OrderType::DOWN}
+            } else if self.search_below(self.floor - 1) == true {
+                return LocalCommandMessage::GoDown;
+            } else if self.up_orders[self.floor as usize] == true {
+                return LocalCommandMessage::StopForOrder{order_type: OrderType::UP}
+            } else {
+                return LocalCommandMessage::DoNothing;
+            }
+        } else if self.direction == ServiceDirection::UP {
+            if self.cab_orders[self.floor as usize] == true ||
+               self.up_orders[self.floor as usize] == true {
+                return LocalCommandMessage::StopForOrder{order_type: OrderType::UP}
+            } else if self.search_above(self.floor + 1) == true {
+                return LocalCommandMessage::GoUp;
+            } else if self.down_orders[self.floor as usize] == true {
+                return LocalCommandMessage::StopForOrder{order_type: OrderType::DOWN}
+            } else {
+                return LocalCommandMessage::DoNothing
+            }
+        } else { // Lift is idle
+            if self.cab_orders[self.floor as usize] == true ||
+               self.down_orders[self.floor as usize] == true {
+                return LocalCommandMessage::StopForOrder{order_type: OrderType::DOWN}
+            } else if self.up_orders[self.floor as usize] == true {
+                return LocalCommandMessage::StopForOrder{order_type: OrderType::UP}
+            } else if self.search_below(self.floor - 1) == true {
+                return LocalCommandMessage::GoDown;
+            } else if self.search_above(self.floor + 1) == true {
+                return LocalCommandMessage::GoUp;
+            } else {
+                return LocalCommandMessage::DoNothing;
+            }
+        }
+    }
+    /*
+    // TODO: Merge into get_local_command // Done
     fn get_new_service_direction(&self) -> ServiceDirection {
         if self.direction == ServiceDirection::DOWN && self.search_below(self.floor) {
             return ServiceDirection::DOWN;
@@ -65,15 +103,15 @@ impl ElevatorData {
         }
     }
 
-    //TODO: Merge into get_local_command
-    fn get_order_in_floor(&self, direction: OrderType) -> bool {
-        if direction == OrderType::DOWN {
+    // TODO: Merge into get_local_command // Done
+    fn get_order_in_floor(&self) -> bool {
+        if self.direction == ServiceDirection::DOWN {
             if self.cab_orders[self.floor as usize] == true ||
                self.down_orders[self.floor as usize] == true || self.floor == 0 ||
                self.search_below(self.floor - 1) == false {
                 return true;
             }
-        } else if direction == OrderType::UP {
+        } else if self.direction == ServiceDirection::UP {
             if self.cab_orders[self.floor as usize] == true ||
                self.up_orders[self.floor as usize] == true ||
                self.floor == N_FLOORS - 1 ||
@@ -83,7 +121,7 @@ impl ElevatorData {
         }
         return false;
     }
-
+    */
 
     fn search_above(&self, floor: i32) -> bool {
         let mut i = floor as usize;
