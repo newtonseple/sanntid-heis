@@ -34,6 +34,8 @@ pub fn start(local_event_rx: mpsc::Receiver<LocalEventMessage>,
     				    },
     				    LocalEventMessage::ArrivedAtFloor{floor} => {
     				    	println!("local_controller got arrived, {}",floor);
+                            println!("Sending i_am_stuck as a test");
+                            i_am_stuck_tx.send(()).expect("Error sending 3862386898372443");
     				    },
     				}
     		}

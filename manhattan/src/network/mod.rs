@@ -20,7 +20,7 @@ pub use self::bcast::Packet;
 use self::peer::*;
 use self::bcast::*;
 
-use self::localip::get_localip;
+pub use self::localip::get_localip;
 
 use hardware_io;
 use planner;

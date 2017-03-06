@@ -53,7 +53,12 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
         select! {
             add_order_result = add_order_rx.recv() => {
                 let order = add_order_result.unwrap();
-                println!("got order, {}", order.floor);
+                println!("got order, {}. Delegating to self and telling network as test", order.floor);
+                send_message_tx.send(network::SendMessageCommand::NewOrder {
+                    order_type: order.order_type,
+                    floor: order.floor,
+                    id: network::get_localip().expect("This is not happening").to_string(),
+                }).expect("unable to send 486983417965827346");
             },
             peer_update_result = peer_update_rx.recv() => {
                 let peer_update = peer_update_result.unwrap();

@@ -2,6 +2,8 @@ use std::io;
 use std::net::{UdpSocket, IpAddr};
 use std::str::from_utf8;
 use std::sync::mpsc;
+use std::thread::sleep;
+use std::time::Duration;
 
 use serde;
 use serde_json;
@@ -66,6 +68,10 @@ impl BcastTransmitter {
             let msg_data = bcast_rx.recv().unwrap();
             let msg = Packet{id: self_id, data: msg_data};
             self.transmit(&msg).expect("Transmission of data failed for BcastTransmitter");
+            sleep(Duration::from_millis(20));
+            self.transmit(&msg).expect("Transmission of data failed for BcastTransmitter");
+            sleep(Duration::from_millis(20));
+            self.transmit(&msg).expect("Transmission of data failed for BcastTransmitter");
         }
     }
 }
@@ -95,7 +101,7 @@ impl BcastReceiver {
         Ok(serde_json::from_str(&msg).unwrap())
     }
 
-    pub fn run<T>(self, bcast_tx: mpsc::Sender<T>) -> !
+    pub fn run<T>(self, message_recieved_tx: mpsc::Sender<T>) -> !
         where T: serde::de::Deserialize
     {
         loop {
@@ -106,7 +112,7 @@ impl BcastReceiver {
                     continue;
                 }
             };
-            bcast_tx.send(msg).unwrap();
+            message_recieved_tx.send(msg).unwrap();
         }
     }
 }
