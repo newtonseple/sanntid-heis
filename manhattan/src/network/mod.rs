@@ -69,11 +69,11 @@ pub fn start(send_message_rx: mpsc::Receiver<SendMessageCommand>,
         });
 
         // Creates BcastReciever thread
-        let (message_tx, message_rx): (mpsc::Sender<SendMessageCommand>, mpsc::Receiver<SendMessageCommand>) = mpsc::channel();
+        //let (message_tx, message_rx): (mpsc::Sender<SendMessageCommand>, mpsc::Receiver<SendMessageCommand>) = mpsc::channel();
         thread::spawn(move || {
             BcastReceiver::new(BCAST_PORT)
                 .expect("Error creating BcastReciever")
-                .run(message_tx);
+                .run(message_recieved_tx);
         });
 
         loop {
