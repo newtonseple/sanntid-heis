@@ -5,6 +5,7 @@ pub use self::c_driver::N_FLOORS;
 
 pub use self::c_driver::OrderType;
 pub use self::c_driver::MotorDirection;
+pub use self::c_driver::ElevType;
 
 //pub type OrderType = elev_button_type_t;
 
@@ -12,9 +13,9 @@ pub use self::c_driver::MotorDirection;
 
 //TODO: change ifs to asserts
 
-pub fn init() {
+pub fn init(type: elev_type) {
     unsafe {
-        c_driver::elev_init();
+        c_driver::elev_init(type);
     }
 }
 
