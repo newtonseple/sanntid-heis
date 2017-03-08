@@ -35,15 +35,13 @@ pub fn start(send_message_rx: mpsc::Receiver<SendMessageCommand>,
              -> thread::JoinHandle<()> {
     
     //let unique = rand::thread_rng().gen::<u16>(); //TODO: make deterministic
-    
-    let unique = 1; //Not so unique, really
 
     // Creates network thread
     thread::Builder::new().name("network".to_string()).spawn(move || {
 
         // Creates PeerTransmitter thread
         thread::spawn(move || { 
-            let id = format!("{}:{}", get_localip().expect("failed to get local ip"), unique);
+            let id = format!("{}", get_localip().expect("failed to get local ip"));
             //let id = get_localip().expect("failed to get local ip");
             PeerTransmitter::new(PEER_PORT)
                 .expect("Error creating PeerTransmitter")
