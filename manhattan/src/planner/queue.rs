@@ -1,27 +1,39 @@
 use hardware_io::{OrderType, N_FLOORS};
 use local_controller::LocalCommandMessage;
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum ServiceDirection {
     UP,
     DOWN,
     IDLE,
 }
 
-struct ElevatorData {
+#[derive(Debug)]
+pub struct ElevatorData {
     up_orders: [bool; N_FLOORS as usize],
     down_orders: [bool; N_FLOORS as usize],
     cab_orders: [bool; N_FLOORS as usize],
     floor: i32,
     direction: ServiceDirection,
+    alive: bool,
 }
 
 impl ElevatorData {
+    pub fn new() -> ElevatorData {
+        ElevatorData {
+            up_orders: [false; N_FLOORS as usize],
+            down_orders: [false; N_FLOORS as usize],
+            cab_orders: [false; N_FLOORS as usize],
+            floor: 0,
+            direction: ServiceDirection::IDLE,
+            alive: true,
+        }
+    }
     pub fn set_order(&mut self, order_type: OrderType, floor: i32, value: bool) {
         match order_type {
-            OrderType::UP => self.up_orders[floor as usize] = true,
-            OrderType::DOWN => self.down_orders[floor as usize] = true,
-            OrderType::CAB => self.cab_orders[floor as usize] = true,
+            OrderType::UP => self.up_orders[floor as usize] = value,
+            OrderType::DOWN => self.down_orders[floor as usize] = value,
+            OrderType::CAB => self.cab_orders[floor as usize] = value,
         }
     }
 

@@ -28,8 +28,6 @@ use planner;
 const PEER_PORT: u16 = 5177;
 const BCAST_PORT: u16 = 5176;
 
-
-
 pub fn start(send_message_rx: mpsc::Receiver<SendMessageCommand>,
              i_am_stuck_rx: mpsc::Receiver<()>,
              message_recieved_tx: mpsc::Sender<Packet<SendMessageCommand, String>>,

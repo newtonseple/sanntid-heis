@@ -31,8 +31,8 @@ pub enum SendMessageCommand {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Packet<T, G> where T: serde::ser::Serialize, 
                           G: serde::ser::Serialize {
-    id: G,
-    data: T,
+    pub id: G,
+    pub data: T,
 }
 
 pub struct BcastTransmitter {

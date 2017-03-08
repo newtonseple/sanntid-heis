@@ -19,9 +19,9 @@ const TIMEOUT_NS: u32 = 30_000_000; // 30 ms
 
 #[derive(Debug)]
 pub struct PeerUpdate<T> {
-    peers: Vec<T>,
-    new: Option<T>,
-    lost: Vec<T>,
+    pub peers: Vec<T>,
+    pub new: Option<T>,
+    pub lost: Vec<T>,
 }
 
 impl<T> PeerUpdate<T>
