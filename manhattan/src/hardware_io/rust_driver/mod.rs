@@ -13,9 +13,9 @@ pub use self::c_driver::ElevType;
 
 //TODO: change ifs to asserts
 
-pub fn init(type: elev_type) {
+pub fn init(elev_type: ElevType) {
     unsafe {
-        c_driver::elev_init(type);
+        c_driver::elev_init(elev_type);
     }
 }
 

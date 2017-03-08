@@ -31,12 +31,12 @@ pub fn start(local_event_tx: mpsc::Sender<local_controller::LocalEventMessage>,
              hw_command_rx: mpsc::Receiver<HwCommandMessage>)
              -> thread::JoinHandle<()> {
     thread::Builder::new().name("hardware_io".to_string()).spawn(move || {
-        let elev_type = match args().nth(1).expect("Please give a elev_type (com/sim)") {
-            "com" => ElevType::ET_Comedi,
+        let elev_type = match args().nth(1).expect("Please give a elev_type (com/sim)").as_str() {
+           "com" => ElevType::ET_Comedi,
             "sim" => ElevType::ET_Simulation,
-            _ => panic!("Unable to parse elev_type, please write either \"com\" or \"sim\"");
-        }
-        init(); //Hardware initialization
+            _ => panic!("Unable to parse elev_type, please write either \"com\" or \"sim\""),
+        };
+        init(elev_type); //Hardware initialization
 
         //states for edge detection
         let mut button_already_pressed = [[false; N_FLOORS as usize]; 3];
