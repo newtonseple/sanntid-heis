@@ -1,39 +1,12 @@
+
 use std::io;
-use std::net::{UdpSocket, IpAddr};
+use std::net::UdpSocket;
 use std::str::from_utf8;
 use std::sync::mpsc;
-use std::thread::sleep;
-use std::time::Duration;
 
 use serde;
 use serde_json;
 use net2::UdpBuilder;
-
-use hardware_io;
-use network::get_localip;
-#[derive(Serialize, Deserialize, Debug)]
-pub enum SendMessageCommand {
-    OrderComplete {
-        order_type: hardware_io::OrderType,
-        floor: i32,
-    },
-    StateUpdate {
-        direction: hardware_io::OrderType,
-        floor: i32,
-    },
-    NewOrder {
-        order_type: hardware_io::OrderType,
-        floor: i32,
-        id: String,
-    }, // usize for use in array indexing, other types might be more appropriate
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Packet<T, G> where T: serde::ser::Serialize, 
-                          G: serde::ser::Serialize {
-    id: G,
-    data: T,
-}
 
 pub struct BcastTransmitter {
     conn: UdpSocket,
@@ -49,11 +22,13 @@ impl BcastTransmitter {
             try!(socket.connect(("255.255.255.255", port)));
             socket
         };
-        Ok(BcastTransmitter { conn: conn })
+        Ok(BcastTransmitter {
+            conn: conn,
+        })
     }
 
-    pub fn transmit<'a, T>(&self, data: &'a T) -> io::Result<()>
-        where T: serde::ser::Serialize
+    pub fn transmit<'a, T>(&self, data: &'a T) -> io::Result<()> 
+        where T: serde::ser::Serialize,
     {
         let serialized = serde_json::to_string(&data).unwrap();
         try!(self.conn.send(serialized.as_bytes()));
@@ -61,16 +36,10 @@ impl BcastTransmitter {
     }
 
     pub fn run<T>(self, bcast_rx: mpsc::Receiver<T>) -> !
-        where T: serde::ser::Serialize
+        where T: serde::ser::Serialize,
     {
-        let self_id = get_localip().unwrap();
         loop {
-            let msg_data = bcast_rx.recv().unwrap();
-            let msg = Packet{id: self_id, data: msg_data};
-            self.transmit(&msg).expect("Transmission of data failed for BcastTransmitter");
-            sleep(Duration::from_millis(20));
-            self.transmit(&msg).expect("Transmission of data failed for BcastTransmitter");
-            sleep(Duration::from_millis(20));
+            let msg = bcast_rx.recv().unwrap();
             self.transmit(&msg).expect("Transmission of data failed for BcastTransmitter");
         }
     }
@@ -89,20 +58,33 @@ impl BcastReceiver {
             try!(socket.set_broadcast(true));
             socket
         };
-        Ok(BcastReceiver { conn: conn })
+        Ok(BcastReceiver {
+            conn: conn,
+        })
     }
 
-    pub fn receive<T>(&self) -> io::Result<T>
-        where T: serde::de::Deserialize
+    
+    pub fn receive(&self) -> io::Result<String> 
+        //where T: serde::de::Deserialize, 
     {
         let mut buf = [0u8; 1024];
         let (amt, _) = try!(self.conn.recv_from(&mut buf));
         let msg = from_utf8(&buf[..amt]).unwrap();
-        Ok(serde_json::from_str(&msg).unwrap())
+        //Ok(serde_json::from_str(&msg).unwrap())
+        Ok(msg.to_string())
     }
-
-    pub fn run<T>(self, message_recieved_tx: mpsc::Sender<T>) -> !
-        where T: serde::de::Deserialize
+    
+/*
+    pub fn receive(&self) -> io::Result<&str> {
+        let mut buf = [0u8; 1024];
+        let (amt, _) = try!(self.conn.recv_from(&mut buf));
+        let msg = from_utf8(&buf[..amt]).unwrap();
+         let temp = Ok(msg);
+         temp
+    }*/
+    /*
+    pub fn run<T>(self, bcast_tx: mpsc::Sender<T>) -> !
+        where T: serde::de::Deserialize,
     {
         loop {
             let msg: T = match self.receive() {
@@ -112,7 +94,22 @@ impl BcastReceiver {
                     continue;
                 }
             };
-            message_recieved_tx.send(msg).unwrap();
+            println!("{}", msg);
+            bcast_tx.send(msg).unwrap();
+        }
+    }
+    */
+        pub fn run(self, bcast_tx: mpsc::Sender<String>) -> ! {
+        loop {
+            let msg = match self.receive() {
+                Ok(msg) => msg,
+                Err(err) => {
+                    println!("Recv failed for BcastReceiver. Error: {}", err);
+                    continue;
+                }
+            };
+            //println!("{}", msg);
+            bcast_tx.send(msg).unwrap();
         }
     }
 }
@@ -165,7 +162,7 @@ mod tests {
     fn transmit_customtype_to_receiver() {
         let port = 9999;
         let values = vec![Values::Hello, Values::Integer(4), Values::Float(-3.3)];
-        {
+        {   
             let values = values.clone();
             thread::spawn(move || {
                 let transmitter = BcastTransmitter::new(port).unwrap();
