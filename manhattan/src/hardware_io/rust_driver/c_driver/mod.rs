@@ -4,7 +4,7 @@ extern crate libc;
 extern "C" {
     //pub static n_floors: libc::c_int;
 
-    pub fn elev_init();
+    pub fn elev_init(elev_type e);
 
     pub fn elev_set_motor_direction(dirn: MotorDirection);
     pub fn elev_set_button_lamp(button: OrderType, floor: libc::c_int, value: libc::c_int);
@@ -33,6 +33,12 @@ pub enum MotorDirection {
     DOWN = -1,
     STOP = 0,
     UP = 1,
+}
+
+#[repr(C)]
+pub enum ElevType {
+    ET_Comedi,
+    ET_Simulation
 }
 
 
