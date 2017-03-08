@@ -63,26 +63,15 @@ impl BcastReceiver {
         })
     }
 
-    
-    pub fn receive(&self) -> io::Result<String> 
-        //where T: serde::de::Deserialize, 
+    pub fn receive<T>(&self) -> io::Result<T> 
+        where T: serde::de::Deserialize, 
     {
         let mut buf = [0u8; 1024];
         let (amt, _) = try!(self.conn.recv_from(&mut buf));
         let msg = from_utf8(&buf[..amt]).unwrap();
-        //Ok(serde_json::from_str(&msg).unwrap())
-        Ok(msg.to_string())
+        Ok(serde_json::from_str(&msg).unwrap())
     }
-    
-/*
-    pub fn receive(&self) -> io::Result<&str> {
-        let mut buf = [0u8; 1024];
-        let (amt, _) = try!(self.conn.recv_from(&mut buf));
-        let msg = from_utf8(&buf[..amt]).unwrap();
-         let temp = Ok(msg);
-         temp
-    }*/
-    /*
+
     pub fn run<T>(self, bcast_tx: mpsc::Sender<T>) -> !
         where T: serde::de::Deserialize,
     {
@@ -94,21 +83,6 @@ impl BcastReceiver {
                     continue;
                 }
             };
-            println!("{}", msg);
-            bcast_tx.send(msg).unwrap();
-        }
-    }
-    */
-        pub fn run(self, bcast_tx: mpsc::Sender<String>) -> ! {
-        loop {
-            let msg = match self.receive() {
-                Ok(msg) => msg,
-                Err(err) => {
-                    println!("Recv failed for BcastReceiver. Error: {}", err);
-                    continue;
-                }
-            };
-            //println!("{}", msg);
             bcast_tx.send(msg).unwrap();
         }
     }

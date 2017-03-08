@@ -14,8 +14,8 @@ use serde;
 use serde_json;
 use net2::UdpBuilder;
 
-const INTERVAL_NS: u32 = 15_000_000; // 15 ms
-const TIMEOUT_NS: u32 = 30_000_000; // 30 ms
+const INTERVAL_NS: u32 = 20_000_000; // 20 ms
+const TIMEOUT_NS: u32 = 100_000_000; // 100 ms
 
 #[derive(Debug)]
 pub struct PeerUpdate<T> {
@@ -73,13 +73,13 @@ impl<T: fmt::Display> fmt::Display for PeerUpdate<T> {
         }
         match self.lost.len() {
             0 => try!(write!(f, "\tlost:  []\n")),
-            1 => try!(write!(f, "\tlost:  [{}]\n", self.peers[0])),
+            1 => try!(write!(f, "\tlost:  [{}]\n", self.lost[0])),
             n @ _ => {
-                try!(write!(f, "\tlost:  [{},\n", self.peers[0]));
+                try!(write!(f, "\tlost:  [{},\n", self.lost[0]));
                 for i in 1..n-1 {
-                    try!(write!(f, "\t        {},\n", self.peers[i]));
+                    try!(write!(f, "\t        {},\n", self.lost[i]));
                 }
-                try!(write!(f, "\t        {}]\n", self.peers[n-1]));
+                try!(write!(f, "\t        {}]\n", self.lost[n-1]));
             }
         }
         Ok(())

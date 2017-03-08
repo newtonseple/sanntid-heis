@@ -9,7 +9,7 @@ extern crate chrono;
 use std::io;
 use std::thread;
 use std::sync::mpsc::channel;
-use std::env::args;
+use std::env;
 use rand::Rng;
 use chrono::offset::local::Local;
 
@@ -29,7 +29,8 @@ struct MyPacket {
 
 fn main() {
     //let unique = rand::thread_rng().gen::<u16>();
-    let unique = args().nth(1).expect("Pls write id");
+    //let unique = rand::thread_rng().gen::<u16>();
+    let unique = env::args().nth(1).unwrap();
     // Spawn peer transmitter and receiver
     thread::spawn(move || {
         let id = format!("{}:{}", get_localip().unwrap(), unique);
@@ -46,7 +47,7 @@ fn main() {
 
     // Spawn broadcast transmitter and receiver
     let (transmit_tx, transmit_rx) = channel::<MyPacket>();
-    let (receive_tx, receive_rx) = channel();
+    let (receive_tx, receive_rx) = channel::<MyPacket>();
     thread::spawn(move|| {
         BcastTransmitter::new(BCAST_PORT)
             .expect("Error creating ")
