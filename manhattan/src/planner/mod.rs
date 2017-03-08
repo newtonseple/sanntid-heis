@@ -8,29 +8,7 @@ use local_controller;
 mod queue;
 
 pub use self::queue::ServiceDirection;
-/*
-pub enum PeerUpdate {
-    NewPeer(i32), // see ----------------------------------------------------\/
-    LostPeer(i32),
-}
-*/
-/*
-pub enum RecievedMessage {
-    OrderComplete {
-        order_type: hardware_io::OrderType,
-        floor: i32,
-    },
-    StateUpdate {
-        direction: hardware_io::OrderType,
-        floor: i32,
-    },
-    NewOrder {
-        order_type: hardware_io::OrderType,
-        floor: i32,
-        id: i32,
-    }, // usize for use in array indexing, other types might be more appropriate
-}
-*/
+
 pub struct LocalCommandRequestMessage {
     pub floor: i32,
     pub current_service_direction: ServiceDirection,

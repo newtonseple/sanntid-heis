@@ -87,41 +87,6 @@ impl ElevatorData {
             }
         }
     }
-    /*
-    // TODO: Merge into get_local_command // Done
-    fn get_new_service_direction(&self) -> ServiceDirection {
-        if self.direction == ServiceDirection::DOWN && self.search_below(self.floor) {
-            return ServiceDirection::DOWN;
-        } else if self.direction == ServiceDirection::UP && self.search_above(self.floor) {
-            return ServiceDirection::UP;
-        } else if self.direction == ServiceDirection::UP && self.search_below(self.floor) {
-            return ServiceDirection::DOWN;
-        } else if self.direction == ServiceDirection::DOWN && self.search_above(self.floor) {
-            return ServiceDirection::UP;
-        } else {
-            return ServiceDirection::IDLE;
-        }
-    }
-
-    // TODO: Merge into get_local_command // Done
-    fn get_order_in_floor(&self) -> bool {
-        if self.direction == ServiceDirection::DOWN {
-            if self.cab_orders[self.floor as usize] == true ||
-               self.down_orders[self.floor as usize] == true || self.floor == 0 ||
-               self.search_below(self.floor - 1) == false {
-                return true;
-            }
-        } else if self.direction == ServiceDirection::UP {
-            if self.cab_orders[self.floor as usize] == true ||
-               self.up_orders[self.floor as usize] == true ||
-               self.floor == N_FLOORS - 1 ||
-               self.search_above(self.floor + 1) == false {
-                return true;
-            }
-        }
-        return false;
-    }
-    */
 
     fn search_above(&self, floor: i32) -> bool {
         let mut i = floor as usize;
