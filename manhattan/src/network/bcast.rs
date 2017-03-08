@@ -66,7 +66,7 @@ impl BcastTransmitter {
         let self_id = get_localip().unwrap();
         loop {
             let msg_data = bcast_rx.recv().unwrap();
-            let msg = Packet{id: self_id, data: msg_data};
+            let msg = Packet{id: self_id.to_owned(), data: msg_data};
             self.transmit(&msg).expect("Transmission of data failed for BcastTransmitter");
             sleep(Duration::from_millis(20));
             self.transmit(&msg).expect("Transmission of data failed for BcastTransmitter");

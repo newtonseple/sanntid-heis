@@ -7,7 +7,7 @@ lazy_static! {
     static ref LOCAL_IP: Mutex<Option<IpAddr>> = Mutex::new(None);
 }
 
-pub fn get_localip() -> Result<IpAddr> {
+pub fn get_localip() -> Result<String> {
     let mut local_ip = LOCAL_IP.lock().unwrap();
     let old_ip = local_ip.clone();
     match old_ip {
@@ -15,9 +15,9 @@ pub fn get_localip() -> Result<IpAddr> {
             let socket = try!(TcpStream::connect("8.8.8.8:53"));
             let ip = try!(socket.local_addr()).ip();
             *local_ip = Some(ip);
-            Ok(ip)
+            Ok((ip.to_string()+":0"))
         }
-        Some(ip) => Ok(ip),
+        Some(ip) => Ok((ip.to_string()+":0")),
     }
 }
 
