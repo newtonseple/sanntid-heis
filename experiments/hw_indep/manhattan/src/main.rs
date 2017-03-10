@@ -19,6 +19,7 @@ use std::thread;
 use std::sync::mpsc;
 
 mod hardware_io;
+mod timer;
 mod planner;
 mod local_controller;
 mod network;
@@ -36,7 +37,8 @@ fn main() {
     let (local_command_tx, local_command_rx) = mpsc::sync_channel(0);
     let (local_command_request_tx, local_command_request_rx) = mpsc::sync_channel(0);
 
-    let hardware_io_thread = hardware_io::start(local_event_tx, add_order_tx, hw_command_rx); //DRIVER IX COMPLETE
+    let hardware_io_thread = hardware_io::start(local_event_tx.clone(), add_order_tx, hw_command_rx); //DRIVER IX COMPLETE
+    let timer_thread = timer::start(local_event_tx.clone());
     let planner_thread = planner::start(hw_command_tx.clone(), //PLANNER IX COMPLETE
                                         send_message_tx.clone(),
                                         peer_update_rx,

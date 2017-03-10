@@ -37,6 +37,7 @@ pub fn start(local_event_rx: mpsc::Receiver<LocalEventMessage>,
         let mut floor = 0;
 
         // Initializing. Getting the elevator to a known state
+        println!("Starting init");
         hw_command_tx.send(HwCommandMessage::SetMotorDirection{direction: MotorDirection::DOWN})
             .expect("could not send HW command 89074350832459876");
         loop {
@@ -48,6 +49,7 @@ pub fn start(local_event_rx: mpsc::Receiver<LocalEventMessage>,
                 _ => continue,
             }
         }
+        println!("Completed Init");
 
         loop {
             match local_event_rx.recv().expect("Unable to recieve local event") {
@@ -93,6 +95,7 @@ fn request_and_execute_local_command(local_command_request_tx: &mpsc::SyncSender
     servicing_order: &mut bool, 
     service_direction: &mut ServiceDirection, 
     timer: &mut i32) {
+    println!("Starting req'n'execute local command");
     local_command_request_tx.send(planner::LocalCommandRequestMessage{floor: *floor, current_service_direction: *service_direction})
         .expect("Unable to send local_command_request");
     match local_command_rx.recv().expect("Unable to recieve local command") {
@@ -136,4 +139,5 @@ fn request_and_execute_local_command(local_command_request_tx: &mpsc::SyncSender
     }
     send_message_tx.send(SendMessageCommand::StateUpdate{direction: *service_direction, floor: *floor})
         .expect("Unable to send message 8749385333333333345");
+    println!("dONE WITH req'n'execute local command");
 }
