@@ -1,7 +1,8 @@
 use hardware_io::{OrderType, N_FLOORS};
 use local_controller::LocalCommandMessage;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Serialize, Deserialize)]
 pub enum ServiceDirection {
     UP,
     DOWN,
