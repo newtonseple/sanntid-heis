@@ -21,7 +21,7 @@ pub enum LocalCommandMessage {
 }
 
 const TIME_BETWEEN_FLOORS: i32 = 10*10;
-const TIME_DOOR_OPEN: i32 = 10*10;
+const TIME_DOOR_OPEN: i32 = 5*10;
 
 pub fn start(local_event_rx: mpsc::Receiver<LocalEventMessage>,
              hw_command_tx: mpsc::Sender<HwCommandMessage>,
@@ -98,6 +98,7 @@ fn request_and_execute_local_command(local_command_request_tx: &mpsc::SyncSender
     servicing_order: &mut bool, 
     service_direction: &mut ServiceDirection, 
     timer: &mut i32) {
+    let previous_service_direction = *service_direction;
     println!("Starting req'n'execute local command");
     local_command_request_tx.send(planner::LocalCommandRequestMessage{floor: *floor, current_service_direction: *service_direction})
         .expect("Unable to send local_command_request");
@@ -144,7 +145,12 @@ fn request_and_execute_local_command(local_command_request_tx: &mpsc::SyncSender
             }).expect("Failed to send order complete 23423476");
         },
     }
-    send_message_tx.send(SendMessageCommand::StateUpdate{direction: *service_direction, floor: *floor})
-        .expect("Unable to send message 8749385333333333345");
+
+    //If we are not just standing still, tell everyone what just happened.
+    if ! (*service_direction == ServiceDirection::IDLE && previous_service_direction == ServiceDirection::IDLE) {
+        send_message_tx.send(SendMessageCommand::StateUpdate{direction: *service_direction, floor: *floor})
+            .expect("Unable to send message 8749385333333333345");
+    }
+
     println!("Done with req'n'execute local command");
 }

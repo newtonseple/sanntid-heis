@@ -2,6 +2,7 @@ use std::sync::mpsc;
 use std::thread;
 use std::net::IpAddr;
 
+use std::cmp::Ordering;
 use std::collections::HashMap;
 
 use hardware_io;
@@ -41,12 +42,26 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
             select! {
                 add_order_result = add_order_rx.recv() => {
                     let order = add_order_result.unwrap();
-                    println!("got order, {}. Delegating to self and telling network as test", order.floor);
-                    //TODO: Delegation logic
+                    let local_id = network::get_localip().expect("could not get local ip");
+                    println!("got order button, {}. Delegating.", order.floor);
+                    
+                    let (best_id, _): (&String, &ElevatorData) = 
+                        match order.order_type {
+                            OrderType::CAB => (&local_id, elevator_data_map.get(&local_id).expect("could not get local lift data")),
+                            _ => {
+                                elevator_data_map.iter().min_by_key(|&(id, elevator_data): &(&String, &ElevatorData)| {
+                                    elevator_data.get_order_cost(order.floor, order.order_type)
+                                }).expect ("Could not find an elevator to handle the order")
+                            }
+                        };
+
+                    
+                    println!("\"Optimal\" elevator found: {}", best_id);
+
                     send_message_tx.send(network::SendMessageCommand::NewOrder {
                         order_type: order.order_type,
                         floor: order.floor,
-                        id: network::get_localip().expect("IP not got").to_string(),
+                        id: (*best_id).clone(),
                     }).expect("unable to send 486983417965827346");
                 },
                 peer_update_result = peer_update_rx.recv() => {
@@ -86,7 +101,6 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                         }
                         network::SendMessageCommand::OrderComplete{order_type, floor} => {
                             println!("Order complete");
-                            //FOR EACH ELEVATOR DATA; REMOVE ORDERS IN DIR
                             for (id, elevator_data) in elevator_data_map.iter_mut() {
                                 elevator_data.set_order(order_type, floor, false);
                                 if *id == local_ip {
@@ -115,15 +129,21 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                     let local_command_request = local_command_request_result.expect("local_command_request_result failed");
                     let local_ip = network::get_localip()
                         .expect("Could not get local ip 9999978");
-                    let local_elevator_data = elevator_data_map
-                        .get_mut(&local_ip)
-                        .expect("Could not get elevator data for local ip");
-                    local_elevator_data.update_state(local_command_request.floor, local_command_request.current_service_direction);
-                    let local_command = local_elevator_data.get_local_command();
-                    local_command_tx.send(local_command)
-                        .expect("Could not send local command 66668234");
-                    //println!("sent local command request");
-
+                    let local_elevator_data_option = elevator_data_map
+                        .get_mut(&local_ip);
+                    match local_elevator_data_option{
+                        Some(local_elevator_data) => {
+                            local_elevator_data.update_state(local_command_request.floor, local_command_request.current_service_direction);
+                            let local_command = local_elevator_data.get_local_command();
+                            local_command_tx.send(local_command)
+                                .expect("Could not send local command 66668234");
+                        }
+                        None => {
+                            local_command_tx.send(local_controller::LocalCommandMessage::DoNothing)
+                                .expect("Could not send local command 68234");
+                        } 
+                    }
+                    println!("sent local command");
                 }
             }
         }
