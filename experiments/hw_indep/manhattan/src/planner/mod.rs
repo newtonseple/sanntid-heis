@@ -100,7 +100,7 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                                     elevator_data.set_order(OrderType::CAB, floor, false);
                                     if *id == local_ip {
                                         hw_command_tx.send(HwCommandMessage::SetButtonLamp{
-                                            button_type: order_type,
+                                            button_type: OrderType::CAB,
                                             floor: floor,
                                             value: false,
                                         }).expect("Could not send light message 3487");

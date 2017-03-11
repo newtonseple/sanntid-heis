@@ -138,6 +138,10 @@ fn request_and_execute_local_command(local_command_request_tx: &mpsc::SyncSender
             *servicing_order = true;
             *timer = TIME_DOOR_OPEN;
             hw_command_tx.send(HwCommandMessage::SetDoorOpenLamp{value: true}).expect("Unable to open door");
+            send_message_tx.send(SendMessageCommand::OrderComplete {
+                order_type: order_type,
+                floor: *floor,
+            }).expect("Failed to send order complete 23423476");
         },
     }
     send_message_tx.send(SendMessageCommand::StateUpdate{direction: *service_direction, floor: *floor})

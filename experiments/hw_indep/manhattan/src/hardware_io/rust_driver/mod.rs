@@ -25,7 +25,7 @@ pub fn set_motor_direction(direction: MotorDirection) {
 }
 
 pub fn set_button_lamp(button: OrderType, floor: i32, value: bool) {
-    if floor > 0 && floor < N_FLOORS as i32 {
+    if floor >= 0 && floor < N_FLOORS as i32 {
         unsafe {
             c_driver::elev_set_button_lamp(button, floor, value as i32);
         }
@@ -35,7 +35,7 @@ pub fn set_button_lamp(button: OrderType, floor: i32, value: bool) {
 }
 
 pub fn set_floor_indicator(floor: i32) {
-    assert!(floor > 0 && floor < N_FLOORS as i32,
+    assert!(floor >= 0 && floor < N_FLOORS as i32,
             "Tried to set the floor in {}th floor (floor not existing)",
             floor);
     unsafe {
