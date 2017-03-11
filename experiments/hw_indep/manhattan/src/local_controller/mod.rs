@@ -21,7 +21,7 @@ pub enum LocalCommandMessage {
 }
 
 const TIME_BETWEEN_FLOORS: i32 = 10*10;
-const TIME_DOOR_OPEN: i32 = 3*10;
+const TIME_DOOR_OPEN: i32 = 10*10;
 
 pub fn start(local_event_rx: mpsc::Receiver<LocalEventMessage>,
              hw_command_tx: mpsc::Sender<HwCommandMessage>,
@@ -146,5 +146,5 @@ fn request_and_execute_local_command(local_command_request_tx: &mpsc::SyncSender
     }
     send_message_tx.send(SendMessageCommand::StateUpdate{direction: *service_direction, floor: *floor})
         .expect("Unable to send message 8749385333333333345");
-    println!("dONE WITH req'n'execute local command");
+    println!("Done with req'n'execute local command");
 }

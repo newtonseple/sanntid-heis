@@ -111,6 +111,7 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                     }
                 },
                 local_command_request_result = local_command_request_rx.recv() => {
+                    println!("got local command request");
                     let local_command_request = local_command_request_result.expect("local_command_request_result failed");
                     let local_ip = network::get_localip()
                         .expect("Could not get local ip 9999978");
@@ -121,6 +122,7 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                     let local_command = local_elevator_data.get_local_command();
                     local_command_tx.send(local_command)
                         .expect("Could not send local command 66668234");
+                    //println!("sent local command request");
 
                 }
             }
