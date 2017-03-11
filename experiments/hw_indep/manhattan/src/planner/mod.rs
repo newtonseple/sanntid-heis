@@ -71,6 +71,19 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                         network::SendMessageCommand::OrderComplete{order_type, floor} => println!("Order complete"),
                         
                     }
+                },
+                local_command_request_result = local_command_request_rx.recv() => {
+                    let local_command_request = local_command_request_result.expect("local_command_request_result failed");
+                    let local_ip = network::get_localip()
+                        .expect("Could not get local ip 9999978");
+                    let local_elevator_data = elevator_data_map
+                        .get_mut(&local_ip)
+                        .expect("Could not get elevator data for local ip");
+                    local_elevator_data.update_state(local_command_request.floor, local_command_request.current_service_direction);
+                    let local_command = local_elevator_data.get_local_command();
+                    local_command_tx.send(local_command)
+                        .expect("Could not send local command 66668234");
+
                 }
             }
         }
