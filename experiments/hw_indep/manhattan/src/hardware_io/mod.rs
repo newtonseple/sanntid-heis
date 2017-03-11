@@ -43,7 +43,7 @@ pub fn start(local_event_tx: mpsc::Sender<local_controller::LocalEventMessage>,
             let mut floor_already_reached = -1;
             loop {
                 if let Ok(command) = hw_command_rx.try_recv() {
-                    println!("Got hw_command");
+                    //println!("Got hw_command");
                     match command {
                         HwCommandMessage::SetFloorIndicator {floor} => {
                             set_floor_indicator(floor);

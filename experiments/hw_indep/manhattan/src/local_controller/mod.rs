@@ -99,7 +99,7 @@ fn request_and_execute_local_command(local_command_request_tx: &mpsc::SyncSender
     service_direction: &mut ServiceDirection, 
     timer: &mut i32) {
     let previous_service_direction = *service_direction;
-    println!("Starting req'n'execute local command");
+    //println!("Starting req'n'execute local command");
     local_command_request_tx.send(planner::LocalCommandRequestMessage{floor: *floor, current_service_direction: *service_direction})
         .expect("Unable to send local_command_request");
     match local_command_rx.recv().expect("Unable to recieve local command") {
@@ -152,5 +152,5 @@ fn request_and_execute_local_command(local_command_request_tx: &mpsc::SyncSender
             .expect("Unable to send message 8749385333333333345");
     }
 
-    println!("Done with req'n'execute local command");
+    //println!("Done with req'n'execute local command");
 }

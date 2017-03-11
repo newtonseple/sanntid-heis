@@ -10,6 +10,7 @@ use hardware_io::HwCommandMessage;
 use hardware_io::OrderType;
 
 use network;
+use network::SendMessageCommand;
 use local_controller;
 
 
@@ -23,6 +24,7 @@ pub struct LocalCommandRequestMessage {
     pub current_service_direction: ServiceDirection,
 }
 
+#[derive(Copy, Clone)]
 pub struct Order {
     pub floor: i32,
     pub order_type: OrderType,
@@ -31,6 +33,7 @@ pub struct Order {
 pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
              send_message_tx: mpsc::Sender<network::SendMessageCommand>,
              peer_update_rx: mpsc::Receiver<network::PeerUpdate<String>>,
+             add_order_tx: mpsc::Sender<Order>,
              add_order_rx: mpsc::Receiver<Order>,
              message_recieved_rx: mpsc::Receiver<network::Packet<network::SendMessageCommand, String>>,
              local_command_request_rx: mpsc::Receiver<LocalCommandRequestMessage>,
@@ -49,9 +52,11 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                         match order.order_type {
                             OrderType::CAB => (&local_id, elevator_data_map.get(&local_id).expect("could not get local lift data")),
                             _ => {
-                                elevator_data_map.iter().min_by_key(|&(id, elevator_data): &(&String, &ElevatorData)| {
-                                    elevator_data.get_order_cost(order.floor, order.order_type)
-                                }).expect ("Could not find an elevator to handle the order")
+                                elevator_data_map.iter()
+                                    .filter(|&(id, elevator_data): &(&String, &ElevatorData)| elevator_data.alive == true)
+                                    .min_by_key(|&(id, elevator_data): &(&String, &ElevatorData)| {
+                                        elevator_data.get_order_cost(order.floor, order.order_type)
+                                    }).expect ("Could not find an elevator to handle the order")
                             }
                         };
 
@@ -68,8 +73,39 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                     let peer_update = peer_update_result.unwrap();
                     println!("{}", peer_update);
                     if let Some(id) = peer_update.new {
-                        elevator_data_map.insert(id, ElevatorData::new());
-                        println!("{:?}", elevator_data_map);
+                        if elevator_data_map.contains_key(&id){
+                            elevator_data_map.get_mut(&id).unwrap().alive = true;
+                            println!("Peer returned from the dead: {}", id);
+                            
+                            // DISTRIBUTION OF EXISTING ORDER TABLE
+                            for (id, elevator_data) in elevator_data_map.iter(){
+                                for order in elevator_data.get_orders(){
+                                    send_message_tx.send(
+                                        SendMessageCommand::NewOrder{
+                                            order_type: order.order_type,
+                                            floor: order.floor,
+                                            id: id.clone(),
+                                        }
+                                    ).expect("could not send orders 989889");
+                                }
+                            }
+                            
+                        } else {
+                            elevator_data_map.insert(id.clone(), ElevatorData::new());
+                            println!("Added new elevator_data for: {}", id);
+                        }
+                    }
+                    for id in peer_update.lost {
+                        elevator_data_map.get_mut(&id).unwrap().alive = false;
+                        println!("Peer died: {}", id);
+
+                        // Redelegation of orders belonging to dead peer
+                        for order in (*elevator_data_map.get(&id).unwrap()).get_orders().iter()
+                            .filter(|&order| order.order_type != OrderType::CAB)
+                        {
+                            add_order_tx.send(*order).expect("Failed to queue order for new assignment");
+                        }
+
                     }
                     
                 },
@@ -80,11 +116,18 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                         .expect("Could not get local ip 99999783");
                     match message_recieved.data {
                         network::SendMessageCommand::NewOrder{order_type, floor, id} => {
-                            println!("NEW ORDER NETWORK RECEIVED");
+                            println!("New order from network");
+                            
+                            //Make sure the entry exists in the order table
+                            if ! (elevator_data_map.contains_key(&id)){
+                                elevator_data_map.insert(id.clone(), ElevatorData::new());
+                                println!("Added new elevator_data for: {}", id);
+                            }
+
                             elevator_data_map.get_mut(&id)
                                 .expect(format!("ID not in map: {}",id).as_str())
                                 .set_order(order_type, floor, true);
-                            if id == local_ip {
+                            if id == local_ip || order_type == OrderType::UP || order_type == OrderType::DOWN{
                                 hw_command_tx.send(HwCommandMessage::SetButtonLamp{
                                     button_type: order_type,
                                     floor: floor,
@@ -103,7 +146,7 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                             println!("Order complete");
                             for (id, elevator_data) in elevator_data_map.iter_mut() {
                                 elevator_data.set_order(order_type, floor, false);
-                                if *id == local_ip {
+                                if *id == local_ip || order_type == OrderType::UP || order_type == OrderType::DOWN {
                                     hw_command_tx.send(HwCommandMessage::SetButtonLamp{
                                         button_type: order_type,
                                         floor: floor,
@@ -112,7 +155,7 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                                 }
                                 if *id == message_recieved.id {
                                     elevator_data.set_order(OrderType::CAB, floor, false);
-                                    if *id == local_ip {
+                                    if *id == local_ip || order_type == OrderType::UP || order_type == OrderType::DOWN {
                                         hw_command_tx.send(HwCommandMessage::SetButtonLamp{
                                             button_type: OrderType::CAB,
                                             floor: floor,
@@ -125,7 +168,7 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                     }
                 },
                 local_command_request_result = local_command_request_rx.recv() => {
-                    println!("got local command request");
+                    //println!("got local command request");
                     let local_command_request = local_command_request_result.expect("local_command_request_result failed");
                     let local_ip = network::get_localip()
                         .expect("Could not get local ip 9999978");
@@ -143,7 +186,7 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                                 .expect("Could not send local command 68234");
                         } 
                     }
-                    println!("sent local command");
+                    //println!("sent local command");
                 }
             }
         }

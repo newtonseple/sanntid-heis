@@ -1,5 +1,8 @@
+use std::iter::Chain;
+
 use hardware_io::{OrderType, N_FLOORS};
 use local_controller::LocalCommandMessage;
+use super::Order;
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 #[derive(Serialize, Deserialize)]
@@ -16,7 +19,7 @@ pub struct ElevatorData {
     cab_orders: [bool; N_FLOORS as usize],
     floor: i32,
     direction: ServiceDirection,
-    alive: bool,
+    pub alive: bool, //Note: This can safely be public. A setter/getter would in this case _only_ add complexity, and would not further minimize accessibility to the data members.
 }
 
 impl ElevatorData {
@@ -36,6 +39,40 @@ impl ElevatorData {
             OrderType::DOWN => self.down_orders[floor as usize] = value,
             OrderType::CAB => self.cab_orders[floor as usize] = value,
         }
+    }
+    pub fn get_orders(&self) -> Vec<Order> {
+        let up_order_iter = self.up_orders.iter().enumerate().filter_map(|(floor, order_value)| -> Option<Order> {
+            if *order_value {
+                Some( Order {
+                    order_type: OrderType::UP,
+                    floor: floor as i32,
+                })
+            } else {
+                None
+            }  
+        });
+        let down_order_iter = self.down_orders.iter().enumerate().filter_map(|(floor, order_value)| -> Option<Order> {
+            if *order_value {
+                Some( Order {
+                    order_type: OrderType::DOWN,
+                    floor: floor as i32,
+                })
+            } else {
+                None
+            }  
+        });
+        let cab_order_iter = self.cab_orders.iter().enumerate().filter_map(|(floor, order_value)| -> Option<Order> {
+            if *order_value {
+                Some( Order {
+                    order_type: OrderType::CAB,
+                    floor: floor as i32,
+                })
+            } else {
+                None
+            }  
+        });
+        
+        up_order_iter.chain(down_order_iter.chain(cab_order_iter)).collect()
     }
 
     pub fn update_state(&mut self, new_floor: i32, new_direction: ServiceDirection) {
