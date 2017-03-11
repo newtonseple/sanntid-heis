@@ -80,6 +80,9 @@ pub fn start(local_event_rx: mpsc::Receiver<LocalEventMessage>,
                 },
                 LocalEventMessage::ArrivedAtFloor{floor: new_floor} => {
                     floor = new_floor;
+                    hw_command_tx.send(HwCommandMessage::SetFloorIndicator{
+                        floor: floor,
+                    }).expect("Could not send floor indicator message 3276487");
                     println!("local_controller got arrived, {}",floor);
                     request_and_execute_local_command(&local_command_request_tx, &hw_command_tx, &send_message_tx, &local_command_rx, &floor, &mut servicing_order, &mut service_direction, &mut timer);              },
             }

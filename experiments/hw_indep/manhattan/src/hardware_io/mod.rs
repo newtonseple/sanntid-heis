@@ -16,6 +16,9 @@ pub use self::rust_driver::N_FLOORS;
 
 
 pub enum HwCommandMessage {
+    SetFloorIndicator {
+        floor: i32,
+    },
     SetButtonLamp {
         button_type: OrderType,
         floor: i32,
@@ -42,12 +45,17 @@ pub fn start(local_event_tx: mpsc::Sender<local_controller::LocalEventMessage>,
                 if let Ok(command) = hw_command_rx.try_recv() {
                     println!("Got hw_command");
                     match command {
+                        HwCommandMessage::SetFloorIndicator {floor} => {
+                            set_floor_indicator(floor);
+                        },
                         HwCommandMessage::SetButtonLamp { button_type, floor, value } => {
-                            set_button_lamp(button_type, floor, value)
-                        }
-                        HwCommandMessage::SetDoorOpenLamp { value } => set_door_open_lamp(value),
+                            set_button_lamp(button_type, floor, value);
+                        },
+                        HwCommandMessage::SetDoorOpenLamp { value } => {
+                            set_door_open_lamp(value);
+                        },
                         HwCommandMessage::SetMotorDirection { direction } => {
-                            set_motor_direction(direction)
+                            set_motor_direction(direction);
                         }
                     }
                 }

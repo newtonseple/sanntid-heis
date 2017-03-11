@@ -20,7 +20,7 @@ extern "C" {
     pub fn test_run() -> libc::c_int;
 }
 
-#[derive(PartialEq, Serialize, Deserialize, Debug)]
+#[derive(PartialEq, Serialize, Deserialize, Debug, Copy, Clone)]
 #[repr(C)]
 pub enum OrderType {
     UP = 0,
