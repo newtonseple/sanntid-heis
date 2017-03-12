@@ -5,7 +5,6 @@ pub use self::c_driver::N_FLOORS;
 
 pub use self::c_driver::OrderType;
 pub use self::c_driver::MotorDirection;
-pub use self::c_driver::ElevType;
 
 //pub type OrderType = elev_button_type_t;
 
@@ -13,9 +12,9 @@ pub use self::c_driver::ElevType;
 
 //TODO: change ifs to asserts
 
-pub fn init(elev_type: ElevType) {
+pub fn init() {
     unsafe {
-        c_driver::elev_init(elev_type);
+        c_driver::elev_init();
     }
 }
 
@@ -26,7 +25,7 @@ pub fn set_motor_direction(direction: MotorDirection) {
 }
 
 pub fn set_button_lamp(button: OrderType, floor: i32, value: bool) {
-    if floor > 0 && floor < N_FLOORS as i32 {
+    if floor >= 0 && floor < N_FLOORS as i32 {
         unsafe {
             c_driver::elev_set_button_lamp(button, floor, value as i32);
         }
@@ -36,7 +35,7 @@ pub fn set_button_lamp(button: OrderType, floor: i32, value: bool) {
 }
 
 pub fn set_floor_indicator(floor: i32) {
-    assert!(floor > 0 && floor < N_FLOORS as i32,
+    assert!(floor >= 0 && floor < N_FLOORS as i32,
             "Tried to set the floor in {}th floor (floor not existing)",
             floor);
     unsafe {

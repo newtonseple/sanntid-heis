@@ -4,7 +4,7 @@ extern crate libc;
 extern "C" {
     //pub static n_floors: libc::c_int;
 
-    pub fn elev_init(e: ElevType);
+    pub fn elev_init();
 
     pub fn elev_set_motor_direction(dirn: MotorDirection);
     pub fn elev_set_button_lamp(button: OrderType, floor: libc::c_int, value: libc::c_int);
@@ -20,7 +20,7 @@ extern "C" {
     pub fn test_run() -> libc::c_int;
 }
 
-#[derive(PartialEq, Serialize, Deserialize, Debug)]
+#[derive(PartialEq, Serialize, Deserialize, Debug, Copy, Clone)]
 #[repr(C)]
 pub enum OrderType {
     UP = 0,
@@ -34,13 +34,6 @@ pub enum MotorDirection {
     STOP = 0,
     UP = 1,
 }
-
-#[repr(C)]
-pub enum ElevType {
-    ET_Comedi,
-    ET_Simulation
-}
-
 
 //This should be the same as N_FLOORS defined in elev.h
 pub const N_FLOORS: i32 = 4;

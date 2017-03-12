@@ -11,6 +11,8 @@ use net2::UdpBuilder;
 
 use hardware_io;
 use network::get_localip;
+use planner::ServiceDirection;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub enum SendMessageCommand {
     OrderComplete {
@@ -18,7 +20,7 @@ pub enum SendMessageCommand {
         floor: i32,
     },
     StateUpdate {
-        direction: hardware_io::OrderType,
+        direction: ServiceDirection, // TODO: Change to ServiceDirection
         floor: i32,
     },
     NewOrder {
