@@ -1,9 +1,12 @@
 // Wrapper for libComedi Elevator control.
 // These functions provide an interface to the elevators in the real time lab
-#pragma once
+#ifndef ELEV_H
+#define ELEV_H
 
 // Number of floors. Hardware-dependent, do not modify.
 #define N_FLOORS 4
+const int n_floors = N_FLOORS;
+
 
 // Number of buttons (and corresponding lamps) on a per-floor basis
 #define N_BUTTONS 3
@@ -20,12 +23,9 @@ typedef enum tag_elev_lamp_type {
     BUTTON_COMMAND = 2
 } elev_button_type_t;
 
-typedef enum {
-    ET_Comedi,
-    ET_Simulation
-} elev_type;
 
-void elev_init(elev_type e);
+
+void elev_init(void);
 
 void elev_set_motor_direction(elev_motor_direction_t dirn);
 void elev_set_button_lamp(elev_button_type_t button, int floor, int value);
@@ -40,3 +40,4 @@ int elev_get_obstruction_signal(void);
 
 
 
+#endif
