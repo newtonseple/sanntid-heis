@@ -69,11 +69,11 @@ impl BcastTransmitter {
         loop {
             let msg_data = bcast_rx.recv().unwrap();
             let msg = Packet{id: self_id.to_owned(), data: msg_data};
-            self.transmit(&msg).expect("Transmission of data failed for BcastTransmitter");
+            self.transmit(&msg).unwrap_or_else(|_| println!("Transmission of data failed for Bcast"));
             sleep(Duration::from_millis(20));
-            self.transmit(&msg).expect("Transmission of data failed for BcastTransmitter");
+            self.transmit(&msg).unwrap_or_else(|_| println!("Transmission of data failed for Bcast"));
             sleep(Duration::from_millis(20));
-            self.transmit(&msg).expect("Transmission of data failed for BcastTransmitter");
+            self.transmit(&msg).unwrap_or_else(|_| println!("Transmission of data failed for Bcast"));
         }
     }
 }
