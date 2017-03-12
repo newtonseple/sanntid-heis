@@ -140,7 +140,7 @@ impl PeerTransmitter {
             }
 
             drop(enabled);
-            self.transmit(data).unwrap_or_else(|_| println!("Transmission of data failed for PeerTransmitter"));
+            self.transmit(data).unwrap_or_else(|_| {});//println!("Transmission of data failed for PeerTransmitter"));
         }
     }
 }

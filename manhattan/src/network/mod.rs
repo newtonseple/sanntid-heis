@@ -56,11 +56,14 @@ pub fn start(send_message_rx: mpsc::Receiver<SendMessageCommand>,
                 .run(peer_update_tx);
         });
         
+
+        let message_recieved_tx_loopback = message_recieved_tx.clone();
+
         // Creates BcastTransmitter thread
         thread::spawn(move || {
             BcastTransmitter::new(BCAST_PORT)
                 .expect("Error creating BcastTransmitter")
-                .run(send_message_rx);
+                .run(send_message_rx, message_recieved_tx_loopback);
 
         });
 
@@ -71,6 +74,8 @@ pub fn start(send_message_rx: mpsc::Receiver<SendMessageCommand>,
                 .expect("Error creating BcastReciever")
                 .run(message_recieved_tx);
         });
+
+
 
         loop {
             /* TEST

@@ -1,3 +1,4 @@
+use std;
 use std::io;
 use std::net::{UdpSocket, IpAddr};
 use std::str::from_utf8;
@@ -13,7 +14,7 @@ use hardware_io;
 use network::get_localip;
 use planner::ServiceDirection;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum SendMessageCommand {
     OrderComplete {
         order_type: hardware_io::OrderType,
@@ -30,7 +31,7 @@ pub enum SendMessageCommand {
     }, // usize for use in array indexing, other types might be more appropriate
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone)]
 pub struct Packet<T, G> where T: serde::ser::Serialize, 
                           G: serde::ser::Serialize {
     pub id: G,
@@ -62,18 +63,21 @@ impl BcastTransmitter {
         Ok(())
     }
 
-    pub fn run<T>(self, bcast_rx: mpsc::Receiver<T>) -> !
-        where T: serde::ser::Serialize
+    pub fn run<T>(self, bcast_rx: mpsc::Receiver<T>, message_recieved_tx: mpsc::Sender<Packet<T, String>>) -> !
+        where T: serde::ser::Serialize + std::clone::Clone
     {
         let self_id = get_localip().unwrap();
         loop {
             let msg_data = bcast_rx.recv().unwrap();
             let msg = Packet{id: self_id.to_owned(), data: msg_data};
-            self.transmit(&msg).unwrap_or_else(|_| println!("Transmission of data failed for Bcast"));
+            
+            message_recieved_tx.send(msg.clone()).expect("Loopback transmission failed");
+
+            self.transmit(&msg).unwrap_or_else(|_| {});//println!("Transmission of data failed for Bcast"));
             sleep(Duration::from_millis(20));
-            self.transmit(&msg).unwrap_or_else(|_| println!("Transmission of data failed for Bcast"));
+            self.transmit(&msg).unwrap_or_else(|_| {});//println!("Transmission of data failed for Bcast"));
             sleep(Duration::from_millis(20));
-            self.transmit(&msg).unwrap_or_else(|_| println!("Transmission of data failed for Bcast"));
+            self.transmit(&msg).unwrap_or_else(|_| {});//println!("Transmission of data failed for Bcast"));
         }
     }
 }
