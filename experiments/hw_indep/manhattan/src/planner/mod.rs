@@ -77,7 +77,7 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                             elevator_data_map.get_mut(&id).unwrap().alive = true;
                             println!("Peer returned from the dead: {}", id);
                             
-                            // DISTRIBUTION OF EXISTING ORDER TABLE
+                            // Distribution of existing order table
                             for (id, elevator_data) in elevator_data_map.iter(){
                                 for order in elevator_data.get_orders(){
                                     send_message_tx.send(
@@ -146,7 +146,7 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                             println!("Order complete");
                             for (id, elevator_data) in elevator_data_map.iter_mut() {
                                 elevator_data.set_order(order_type, floor, false);
-                                if *id == local_ip || order_type == OrderType::UP || order_type == OrderType::DOWN {
+                                if order_type == OrderType::UP || order_type == OrderType::DOWN {
                                     hw_command_tx.send(HwCommandMessage::SetButtonLamp{
                                         button_type: order_type,
                                         floor: floor,
@@ -155,7 +155,7 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                                 }
                                 if *id == message_recieved.id {
                                     elevator_data.set_order(OrderType::CAB, floor, false);
-                                    if *id == local_ip || order_type == OrderType::UP || order_type == OrderType::DOWN {
+                                    if *id == local_ip {
                                         hw_command_tx.send(HwCommandMessage::SetButtonLamp{
                                             button_type: OrderType::CAB,
                                             floor: floor,

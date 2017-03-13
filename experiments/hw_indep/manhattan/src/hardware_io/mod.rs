@@ -37,7 +37,7 @@ pub fn start(local_event_tx: mpsc::Sender<local_controller::LocalEventMessage>,
         .name("hardware_io".to_string())
         .spawn(move || {
             init(); //Hardware initialization
-
+            println!("Hardware init complete from hardware_io");
             //states for edge detection
             let mut button_already_pressed = [[false; N_FLOORS as usize]; 3];
             let mut floor_already_reached = -1;
