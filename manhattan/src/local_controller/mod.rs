@@ -21,7 +21,7 @@ pub enum LocalCommandMessage {
 }
 
 const TIME_BETWEEN_FLOORS: i32 = 10*10;
-const TIME_DOOR_OPEN: i32 = 5*10;
+const TIME_DOOR_OPEN: i32 = 3*10;
 
 pub fn start(local_event_rx: mpsc::Receiver<LocalEventMessage>,
              hw_command_tx: mpsc::Sender<HwCommandMessage>,
