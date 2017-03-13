@@ -14,7 +14,7 @@ use hardware_io;
 use network::get_localip;
 use planner::ServiceDirection;
 
-const N_REDUNDANCY: u32 = 8; //15 packets over three send times
+const N_REDUNDANCY: u32 = 3; //15 packets over three send times
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum SendMessageCommand {
