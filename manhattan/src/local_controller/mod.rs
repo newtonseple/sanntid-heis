@@ -67,8 +67,8 @@ pub fn start(local_event_rx: mpsc::Receiver<LocalEventMessage>,
                             match service_direction{
                                 ServiceDirection::UP | ServiceDirection::DOWN if timer <= 0 => {
                                     //We have been travelling for too long. Assume dead.
-                                    println!("Sending i_am_stuck as a test");
-                    i_am_stuck_tx.send(()).expect("Error sending i_am_stuck");
+                                    //println!("Sending i_am_stuck as a test");
+                                    i_am_stuck_tx.send(()).expect("Error sending i_am_stuck");
                                 },
                                 ServiceDirection::IDLE => {
                                     request_and_execute_local_command(&local_command_request_tx, &hw_command_tx, &send_message_tx, &local_command_rx, &floor, &mut servicing_order, &mut service_direction, &mut timer);
@@ -83,7 +83,7 @@ pub fn start(local_event_rx: mpsc::Receiver<LocalEventMessage>,
                     hw_command_tx.send(HwCommandMessage::SetFloorIndicator{
                         floor: floor,
                     }).expect("Could not send floor indicator message 3276487");
-                    println!("local_controller got arrived, {}",floor);
+                    //println!("local_controller got arrived, {}",floor);
                     request_and_execute_local_command(&local_command_request_tx, &hw_command_tx, &send_message_tx, &local_command_rx, &floor, &mut servicing_order, &mut service_direction, &mut timer);              },
             }
         }

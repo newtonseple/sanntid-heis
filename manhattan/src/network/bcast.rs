@@ -14,6 +14,8 @@ use hardware_io;
 use network::get_localip;
 use planner::ServiceDirection;
 
+const N_REDUNDANCY: u32 = 8; //15 packets over three send times
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum SendMessageCommand {
     OrderComplete {
@@ -72,12 +74,18 @@ impl BcastTransmitter {
             let msg = Packet{id: self_id.to_owned(), data: msg_data};
             
             message_recieved_tx.send(msg.clone()).expect("Loopback transmission failed");
-
-            self.transmit(&msg).unwrap_or_else(|_| {});//println!("Transmission of data failed for Bcast"));
+            for _ in 0..N_REDUNDANCY{
+                self.transmit(&msg).unwrap_or_else(|_| {});//println!("Transmission of data failed for Bcast"));
+                sleep(Duration::from_millis(2))
+            }/*
             sleep(Duration::from_millis(20));
-            self.transmit(&msg).unwrap_or_else(|_| {});//println!("Transmission of data failed for Bcast"));
+            for _ in 0..N_REDUNDANCY{
+                self.transmit(&msg).unwrap_or_else(|_| {});//println!("Transmission of data failed for Bcast"));
+            }
             sleep(Duration::from_millis(20));
-            self.transmit(&msg).unwrap_or_else(|_| {});//println!("Transmission of data failed for Bcast"));
+            for _ in 0..N_REDUNDANCY{
+                self.transmit(&msg).unwrap_or_else(|_| {});//println!("Transmission of data failed for Bcast"));
+            }*/
         }
     }
 }
@@ -114,7 +122,7 @@ impl BcastReceiver {
             let msg: T = match self.receive() {
                 Ok(msg) => msg,
                 Err(err) => {
-                    println!("Recv failed for BcastReceiver. Error: {}", err);
+                    //println!("Recv failed for BcastReceiver. Error: {}", err);
                     continue;
                 }
             };

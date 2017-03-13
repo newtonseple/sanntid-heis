@@ -78,10 +78,9 @@ pub fn start(send_message_rx: mpsc::Receiver<SendMessageCommand>,
 
 
         loop {
-            /* TEST
+           
             thread::sleep(Duration::from_millis(5000));
-            peer_update_hold_tx.send(()).unwrap();
-            */
+           // peer_update_hold_tx.send(()).unwrap();
         }
     }).expect("Failed to start thread")
 }
