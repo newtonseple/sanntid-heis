@@ -1,8 +1,6 @@
 use std::sync::mpsc;
 use std::thread;
-use std::net::IpAddr;
 
-use std::cmp::Ordering;
 use std::collections::HashMap;
 
 use hardware_io;

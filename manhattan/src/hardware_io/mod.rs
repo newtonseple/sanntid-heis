@@ -1,7 +1,6 @@
 // External dependencies
 use std::sync::mpsc;
 use std::thread;
-use std::env::args;
 
 use std::thread::sleep;
 use std::time::Duration;

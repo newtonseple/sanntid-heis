@@ -1,13 +1,6 @@
 use std::sync::mpsc;
 use std::thread;
 use std::time::Duration;
-use std::io;
-use std::sync::mpsc::channel;
-use std::net;
-
-use rand;
-use rand::Rng;
-use chrono::offset::local::Local;
 
 pub mod localip;
 mod bcast;
@@ -21,9 +14,6 @@ use self::peer::*;
 use self::bcast::*;
 
 pub use self::localip::get_localip;
-
-use hardware_io;
-use planner;
 
 const PEER_PORT: u16 = 5177;
 const BCAST_PORT: u16 = 5176;

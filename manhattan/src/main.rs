@@ -1,8 +1,8 @@
 #![allow(dead_code)]
-#![allow(unused_imports)]
+//#![allow(unused_imports)]
 #![allow(unused_variables)]
 //#![allow(non_camel_case_types)]
-#![allow(safe_extern_statics)]
+//#![allow(safe_extern_statics)]
 #![feature(mpsc_select)]
 
 #[macro_use]
@@ -15,7 +15,6 @@ extern crate net2;
 extern crate rand;
 extern crate chrono;
 
-use std::thread;
 use std::sync::mpsc;
 
 mod hardware_io;
@@ -51,7 +50,7 @@ fn main() {
 
     let network_thread = network::start(send_message_rx, i_am_stuck_rx, message_recieved_tx, peer_update_tx);
 
-
+    /*
     let msg_test: hardware_io::HwCommandMessage =
         hardware_io::HwCommandMessage::SetDoorOpenLamp { value: true };
 
@@ -59,10 +58,12 @@ fn main() {
         hardware_io::HwCommandMessage::SetMotorDirection {
             direction: hardware_io::MotorDirection::UP,
         };
-
+    */
     //hw_command_tx.send(msg_test_motor).unwrap();
 
     hardware_io_thread.join().unwrap();
+    timer_thread.join().unwrap();
+    network_thread.join().unwrap();
     planner_thread.join().unwrap();
     local_controller_thread.join().unwrap();
     panic!("Exited the main thread!?");

@@ -1,5 +1,7 @@
 use std::sync::mpsc;
 use std::thread;
+use std::thread::sleep;
+use std::time::Duration;
 
 use hardware_io;
 use hardware_io::{HwCommandMessage, MotorDirection};
@@ -38,15 +40,18 @@ pub fn start(local_event_rx: mpsc::Receiver<LocalEventMessage>,
 
         // Initializing. Getting the elevator to a known state
         println!("Starting init");
-        hw_command_tx.send(HwCommandMessage::SetMotorDirection{direction: MotorDirection::DOWN})
-            .expect("could not send HW command 89074350832459876");
         loop {
-            match local_event_rx.recv().expect("Unable to recieve local event") {
-                LocalEventMessage::ArrivedAtFloor{floor: 0} => {
+            match local_event_rx.try_recv() {
+                Ok(LocalEventMessage::ArrivedAtFloor{floor: 0}) => {
                     hw_command_tx.send(HwCommandMessage::SetMotorDirection{direction: MotorDirection::STOP}).expect("could not send HW command 324798");
                     break;
                 },
-                _ => continue,
+                _ => {
+                    hw_command_tx.send(HwCommandMessage::SetMotorDirection{direction: MotorDirection::DOWN})
+                        .expect("could not send HW command 89074350832459876");
+                    sleep(Duration::from_millis(20));
+                    continue;
+                },
             }
         }
         println!("Completed Init");

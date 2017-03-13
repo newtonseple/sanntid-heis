@@ -1,5 +1,3 @@
-use std::iter::Chain;
-
 use hardware_io::{OrderType, N_FLOORS};
 use local_controller::LocalCommandMessage;
 use super::Order;

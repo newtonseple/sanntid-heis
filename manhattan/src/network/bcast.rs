@@ -1,6 +1,6 @@
 use std;
 use std::io;
-use std::net::{UdpSocket, IpAddr};
+use std::net::UdpSocket;
 use std::str::from_utf8;
 use std::sync::mpsc;
 use std::thread::sleep;
@@ -14,7 +14,7 @@ use hardware_io;
 use network::get_localip;
 use planner::ServiceDirection;
 
-const N_REDUNDANCY: u32 = 6; //15 packets over three send times
+const N_REDUNDANCY: u32 = 8; //15 packets over three send times
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum SendMessageCommand {
