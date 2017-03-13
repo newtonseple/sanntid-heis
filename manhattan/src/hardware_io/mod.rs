@@ -68,7 +68,7 @@ pub fn start(local_event_tx: mpsc::Sender<local_controller::LocalEventMessage>,
 
                 if let Some(floor_sensor_result) = get_floor_sensor_signal() {
                     if floor_sensor_result != floor_already_reached {
-                        if floor_sensor_result > -1 { //If we are at a floor
+                        if floor_sensor_result == 0 || floor_sensor_result == N_FLOORS - 1 { //If we are at top/bottom floor
                             set_motor_direction(MotorDirection::STOP); // Stop motor, wait for new orders
                             }
                         local_event_tx.send(local_controller::LocalEventMessage::ArrivedAtFloor {
