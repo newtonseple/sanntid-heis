@@ -14,7 +14,7 @@ use hardware_io;
 use network::get_localip;
 use planner::ServiceDirection;
 
-const N_REDUNDANCY: u32 = 3; //15 packets over three send times
+const N_REDUNDANCY: u32 = 8; //15 packets over three send times
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum SendMessageCommand {
@@ -76,7 +76,7 @@ impl BcastTransmitter {
             message_recieved_tx.send(msg.clone()).expect("Loopback transmission failed");
             for _ in 0..N_REDUNDANCY{
                 self.transmit(&msg).unwrap_or_else(|_| {});//println!("Transmission of data failed for Bcast"));
-                sleep(Duration::from_millis(2))
+                //sleep(Duration::from_millis(0.5))
             }/*
             sleep(Duration::from_millis(20));
             for _ in 0..N_REDUNDANCY{
