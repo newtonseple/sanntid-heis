@@ -124,8 +124,8 @@ pub fn start(local_event_tx: mpsc::Sender<local_controller::LocalEventMessage>,
 
                 }
                 if get_stop_signal() {
-                    set_motor_direction(MotorDirection::STOP);
-                    panic!("STOP!!!"); //TODO MAYBE: Slightly more graceful exit...
+                    //set_motor_direction(MotorDirection::STOP);
+                    //panic!("STOP!!!"); //TODO MAYBE: Slightly more graceful exit...
                 }
 
                 // Input with unspesified behaviour
