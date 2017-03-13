@@ -1,6 +1,5 @@
 extern crate libc;
 
-
 extern "C" {
     //pub static n_floors: libc::c_int;
 

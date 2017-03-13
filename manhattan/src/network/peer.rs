@@ -1,4 +1,3 @@
-
 use std::io;
 use std::thread;
 use std::net::UdpSocket;
@@ -240,11 +239,14 @@ mod tests {
             let transmitter = PeerTransmitter::new(port).unwrap();
             transmitter.run(&id);
         });
+
         let (tx, rx) = channel::<PeerUpdate<String>>();
         thread::spawn(move || {
             let receiver = PeerReceiver::new(port).unwrap();
             receiver.run(tx);
         });
+
+        // Send multiple times for redundancy
         for _ in 0..10 {
             let update = rx.recv().unwrap();
             println!("Peer update");

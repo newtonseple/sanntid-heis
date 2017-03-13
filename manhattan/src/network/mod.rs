@@ -9,11 +9,10 @@ mod peer;
 pub use self::peer::PeerUpdate;
 pub use self::bcast::SendMessageCommand;
 pub use self::bcast::Packet;
+pub use self::localip::get_localip;
 
 use self::peer::*;
 use self::bcast::*;
-
-pub use self::localip::get_localip;
 
 const PEER_PORT: u16 = 5177;
 const BCAST_PORT: u16 = 5176;
@@ -23,12 +22,8 @@ pub fn start(send_message_rx: mpsc::Receiver<SendMessageCommand>,
              message_recieved_tx: mpsc::Sender<Packet<SendMessageCommand, String>>,
              peer_update_tx: mpsc::Sender<PeerUpdate<String>>)
              -> thread::JoinHandle<()> {
-    
-    //let unique = rand::thread_rng().gen::<u16>(); //TODO: make deterministic
-
     // Creates network thread
     thread::Builder::new().name("network".to_string()).spawn(move || {
-
         // Creates PeerTransmitter thread
         thread::spawn(move || { 
             let id = format!("{}", get_localip().expect("failed to get local ip"));
@@ -39,14 +34,12 @@ pub fn start(send_message_rx: mpsc::Receiver<SendMessageCommand>,
         });
 
         // Creates PeerReciever thread
-        //let (peer_tx, peer_rx) = channel::<PeerUpdate<String>>();
         thread::spawn(move || {
             PeerReceiver::new(PEER_PORT)
                 .expect("Error creating PeerReceiver")
                 .run(peer_update_tx);
         });
         
-
         let message_recieved_tx_loopback = message_recieved_tx.clone();
 
         // Creates BcastTransmitter thread
@@ -58,19 +51,15 @@ pub fn start(send_message_rx: mpsc::Receiver<SendMessageCommand>,
         });
 
         // Creates BcastReciever thread
-        //let (message_tx, message_rx): (mpsc::Sender<SendMessageCommand>, mpsc::Receiver<SendMessageCommand>) = mpsc::channel();
         thread::spawn(move || {
             BcastReceiver::new(BCAST_PORT)
                 .expect("Error creating BcastReciever")
                 .run(message_recieved_tx);
         });
 
-
-
         loop {
            
             thread::sleep(Duration::from_millis(5000));
-           // peer_update_hold_tx.send(()).unwrap();
         }
     }).expect("Failed to start thread")
 }

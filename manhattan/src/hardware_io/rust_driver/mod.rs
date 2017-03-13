@@ -1,14 +1,8 @@
 mod c_driver;
 
-
 pub use self::c_driver::N_FLOORS;
-
 pub use self::c_driver::OrderType;
 pub use self::c_driver::MotorDirection;
-
-//pub type OrderType = elev_button_type_t;
-
-//pub type MotorDirection = elev_motor_direction_t;
 
 //TODO: change ifs to asserts
 
@@ -55,7 +49,6 @@ pub fn set_stop_lamp(value: bool) {
     }
 }
 
-
 pub fn get_button_signal(button: OrderType, floor: i32) -> bool {
     if floor >= 0 && floor < N_FLOORS as i32 {
         unsafe { c_driver::elev_get_button_signal(button, floor) != 0 }
@@ -78,7 +71,6 @@ pub fn get_stop_signal() -> bool {
 pub fn get_obstruction_signal() -> bool {
     unsafe { c_driver::elev_get_obstruction_signal() != 0 }
 }
-
 
 pub fn test_run() -> ! {
     unsafe {
