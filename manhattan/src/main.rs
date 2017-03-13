@@ -40,13 +40,18 @@ fn main() {
     let timer_thread = timer::start(local_event_tx.clone());
     let planner_thread = planner::start(hw_command_tx.clone(), //PLANNER IX COMPLETE
                                         send_message_tx.clone(),
-                                        peer_update_rx,
+                                        local_command_tx,
                                         add_order_tx.clone(),
                                         add_order_rx,
+                                        peer_update_rx,
                                         message_recieved_rx,
-                                        local_command_request_rx,
-                                        local_command_tx);
-    let local_controller_thread = local_controller::start(local_event_rx, hw_command_tx.clone(), send_message_tx.clone(), local_command_request_tx, i_am_stuck_tx, local_command_rx); //LOCAL CTRL IX COMPLETE
+                                        local_command_request_rx);
+    let local_controller_thread = local_controller::start(hw_command_tx.clone(), 
+                                                          send_message_tx.clone(), 
+                                                          local_command_request_tx,
+                                                          i_am_stuck_tx, 
+                                                          local_command_rx, //LOCAL CTRL IX COMPLETE
+                                                          local_event_rx); 
 
     let network_thread = network::start(send_message_rx, i_am_stuck_rx, message_recieved_tx, peer_update_tx);
 

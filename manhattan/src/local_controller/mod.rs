@@ -29,8 +29,8 @@ pub fn start(hw_command_tx: mpsc::Sender<HwCommandMessage>,
              send_message_tx: mpsc::Sender<network::SendMessageCommand>,
              local_command_request_tx: mpsc::SyncSender<planner::LocalCommandRequestMessage>,
              i_am_stuck_tx: mpsc::Sender<()>,
-             local_command_rx: mpsc::Receiver<LocalCommandMessage>)
-             local_event_rx: mpsc::Receiver<LocalEventMessage>,
+             local_command_rx: mpsc::Receiver<LocalCommandMessage>,
+             local_event_rx: mpsc::Receiver<LocalEventMessage>)
              -> thread::JoinHandle<()> {
     thread::Builder::new().name("local_controller".to_string()).spawn(move || {
         let mut timer = 0;
