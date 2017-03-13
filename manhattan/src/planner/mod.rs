@@ -1,22 +1,20 @@
 use std::sync::mpsc;
 use std::thread;
 use std::net::IpAddr;
-
 use std::cmp::Ordering;
 use std::collections::HashMap;
 
 use hardware_io;
 use hardware_io::HwCommandMessage;
 use hardware_io::OrderType;
-
 use network;
 use network::SendMessageCommand;
 use local_controller;
 
-
 mod queue;
 
 pub use self::queue::ServiceDirection;
+
 use self::queue::ElevatorData;
 
 pub struct LocalCommandRequestMessage {
@@ -32,12 +30,12 @@ pub struct Order {
 
 pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
              send_message_tx: mpsc::Sender<network::SendMessageCommand>,
-             peer_update_rx: mpsc::Receiver<network::PeerUpdate<String>>,
              add_order_tx: mpsc::Sender<Order>,
+             local_command_tx: mpsc::SyncSender<local_controller::LocalCommandMessage>,
+             peer_update_rx: mpsc::Receiver<network::PeerUpdate<String>>,
              add_order_rx: mpsc::Receiver<Order>,
              message_recieved_rx: mpsc::Receiver<network::Packet<network::SendMessageCommand, String>>,
-             local_command_request_rx: mpsc::Receiver<LocalCommandRequestMessage>,
-             local_command_tx: mpsc::SyncSender<local_controller::LocalCommandMessage>)
+             local_command_request_rx: mpsc::Receiver<LocalCommandRequestMessage>)
              -> thread::JoinHandle<()> {
     thread::Builder::new().name("planner".to_string()).spawn(move || {
         let mut elevator_data_map = HashMap::new();
@@ -62,7 +60,6 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
 
                     
                     //println!("\"Optimal\" elevator found: {}", best_id);
-
                     send_message_tx.send(network::SendMessageCommand::NewOrder {
                         order_type: order.order_type,
                         floor: order.floor,

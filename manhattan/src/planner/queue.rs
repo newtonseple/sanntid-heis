@@ -33,6 +33,7 @@ impl ElevatorData {
             alive: true,
         }
     }
+
     pub fn set_order(&mut self, order_type: OrderType, floor: i32, value: bool) {
         match order_type {
             OrderType::UP => self.up_orders[floor as usize] = value,
@@ -40,6 +41,7 @@ impl ElevatorData {
             OrderType::CAB => self.cab_orders[floor as usize] = value,
         }
     }
+    
     pub fn get_orders(&self) -> Vec<Order> {
         let up_order_iter = self.up_orders.iter().enumerate().filter_map(|(floor, order_value)| -> Option<Order> {
             if *order_value {

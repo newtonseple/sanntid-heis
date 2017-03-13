@@ -1,15 +1,9 @@
-// External dependencies
 use std::sync::mpsc;
 use std::thread;
 use std::env::args;
-
 use std::thread::sleep;
 use std::time::Duration;
 
-use planner;
-use local_controller;
-
-// Internal dependencies
 mod rust_driver;
 use self::rust_driver::*;
 
@@ -17,6 +11,8 @@ pub use self::rust_driver::OrderType;
 pub use self::rust_driver::MotorDirection;
 pub use self::rust_driver::N_FLOORS;
 
+use planner;
+use local_controller;
 
 pub enum HwCommandMessage {
     SetFloorIndicator {
