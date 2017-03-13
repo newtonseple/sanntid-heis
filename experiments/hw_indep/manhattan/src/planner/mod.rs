@@ -46,7 +46,7 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                 add_order_result = add_order_rx.recv() => {
                     let order = add_order_result.unwrap();
                     let local_id = network::get_localip().expect("could not get local ip");
-                    println!("got order button, {}. Delegating.", order.floor);
+                    //println!("got order button, {}. Delegating.", order.floor);
                     
                     let (best_id, _): (&String, &ElevatorData) = 
                         match order.order_type {
@@ -61,7 +61,7 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                         };
 
                     
-                    println!("\"Optimal\" elevator found: {}", best_id);
+                    //println!("\"Optimal\" elevator found: {}", best_id);
 
                     send_message_tx.send(network::SendMessageCommand::NewOrder {
                         order_type: order.order_type,
@@ -111,12 +111,12 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                 },
                 message_recieved_result = message_recieved_rx.recv() => {
                     let message_recieved = message_recieved_result.expect("message_recieved_result failed");
-                    println!("Got net message! {:?}", message_recieved);
+                    //println!("Got net message! {:?}", message_recieved);
                     let local_ip = network::get_localip()
                         .expect("Could not get local ip 99999783");
                     match message_recieved.data {
                         network::SendMessageCommand::NewOrder{order_type, floor, id} => {
-                            println!("New order from network");
+                            //println!("New order from network");
                             
                             //Make sure the entry exists in the order table
                             if ! (elevator_data_map.contains_key(&id)){
@@ -136,14 +136,14 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                             }
                         },
                         network::SendMessageCommand::StateUpdate{direction, floor} => {
-                            println!("State upd rcv");
+                            //println!("State upd rcv");
                             match elevator_data_map.get_mut(&message_recieved.id){
                                 Some(elevator_data) => elevator_data.update_state(floor, direction),
-                                None => println!("No elevator data for remote ip")
+                                None => {}//println!("No elevator data for remote ip")
                             }
                         }
                         network::SendMessageCommand::OrderComplete{order_type, floor} => {
-                            println!("Order complete");
+                            //println!("Order complete");
                             for (id, elevator_data) in elevator_data_map.iter_mut() {
                                 elevator_data.set_order(order_type, floor, false);
                                 if order_type == OrderType::UP || order_type == OrderType::DOWN {

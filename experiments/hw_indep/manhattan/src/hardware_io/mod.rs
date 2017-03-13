@@ -3,6 +3,9 @@ use std::sync::mpsc;
 use std::thread;
 use std::env::args;
 
+use std::thread::sleep;
+use std::time::Duration;
+
 use planner;
 use local_controller;
 
@@ -42,6 +45,7 @@ pub fn start(local_event_tx: mpsc::Sender<local_controller::LocalEventMessage>,
             let mut button_already_pressed = [[false; N_FLOORS as usize]; 3];
             let mut floor_already_reached = -1;
             loop {
+                sleep(Duration::from_millis(10)); // ~100 Hz update frequency
                 if let Ok(command) = hw_command_rx.try_recv() {
                     //println!("Got hw_command");
                     match command {

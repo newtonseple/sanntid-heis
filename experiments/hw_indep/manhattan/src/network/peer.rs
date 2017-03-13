@@ -14,8 +14,9 @@ use serde;
 use serde_json;
 use net2::UdpBuilder;
 
-const INTERVAL_NS: u32 = 15_000_000; // 15 ms
-const TIMEOUT_NS: u32 = 30_000_000; // 30 ms
+const INTERVAL_NS: u32 = 300_000_000; // 300 ms
+const TIMEOUT_NS: u32 = 1_000_000_000; // 1000 ms
+const N_REDUNDANCY: u32 = 4;
 
 #[derive(Debug)]
 pub struct PeerUpdate<T> {
@@ -121,7 +122,10 @@ impl PeerTransmitter {
         where T: serde::ser::Serialize
     {
         let serialized = serde_json::to_string(&data).unwrap();
-        try!(self.conn.send(serialized.as_bytes()));
+        for _ in 0..N_REDUNDANCY {
+            try!(self.conn.send(serialized.as_bytes()));
+        }
+        
         Ok(())
     }
 

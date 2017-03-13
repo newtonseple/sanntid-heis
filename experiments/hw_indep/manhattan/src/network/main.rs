@@ -76,10 +76,10 @@ fn main() {
     loop {
         select! {
             update = peer_rx.recv() => {
-                println!("{}", update.unwrap());
+                //println!("{}", update.unwrap());
             },
             bcast_msg = receive_rx.recv() => {
-                println!("Got bcast_msg: {:?}", bcast_msg.unwrap());
+                //println!("Got bcast_msg: {:?}", bcast_msg.unwrap());
             }
         }
     }
