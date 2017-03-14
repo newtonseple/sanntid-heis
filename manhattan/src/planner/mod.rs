@@ -45,11 +45,16 @@ pub fn run(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
            local_command_request_rx: mpsc::Receiver<LocalCommandRequestMessage>)
            -> thread::JoinHandle<()> {
     thread::Builder::new().name("planner".to_string()).spawn(move || {
+
+        // Make the elevator map, and make sure the local elevator exists
         let mut elevator_data_map = HashMap::new();
+        let local_id = network::get_localip().expect("could not get local ip");
+        elevator_data_map.insert(local_id.clone(), ElevatorData::new());
+
         loop {
             select! {
                 // the add_order channel contains orders for delegation,
-                // and are handled here
+                // and are handled here.
                 add_order_result = add_order_rx.recv() => {
                     let order = add_order_result.unwrap();
                     let local_id = network::get_localip().expect("could not get local ip");
