@@ -1,3 +1,5 @@
+// This is rust bindings for the C driver provided on github
+
 extern crate libc;
 
 #[allow(dead_code)] // This is a general module, so it is fine if we don't use all of it.

@@ -1,3 +1,5 @@
+// This is a safe rust wrapper for the unsafe bindings for the C driver supplied on github.
+
 #![allow(dead_code)] // This is a general module, so it is fine if we don't use all of it.
 
 mod c_driver;
@@ -31,11 +33,14 @@ pub fn set_button_lamp(button: OrderType, floor: i32, value: bool) {
 }
 
 pub fn set_floor_indicator(floor: i32) {
-    assert!(floor >= 0 && floor < N_FLOORS as i32,
-            "Tried to set the floor in {}th floor (floor not existing)",
-            floor);
-    unsafe {
-        c_driver::elev_set_floor_indicator(floor);
+    if floor >= 0 && floor < N_FLOORS as i32 {
+        unsafe {
+            c_driver::elev_set_floor_indicator(floor);
+
+        }
+    } else {
+        panic!("Tried to set the floor in {}th floor (floor not existing)",
+               floor)
     }
 }
 
@@ -60,7 +65,7 @@ pub fn get_button_signal(button: OrderType, floor: i32) -> bool {
     }
 }
 
-// returns the floor (0-indexed) or None
+// Returns the floor (0-indexed) or None
 pub fn get_floor_sensor_signal() -> Option<i32> {
     let result = unsafe { c_driver::elev_get_floor_sensor_signal() };
     if result != -1 { Some(result) } else { None }
