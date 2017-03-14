@@ -130,8 +130,7 @@ impl BcastReceiver {
         loop {
             let msg: T = match self.receive() {
                 Ok(msg) => msg,
-                Err(err) => {
-                    //println!("Recv failed for BcastReceiver. Error: {}", err);
+                Err(_) => {
                     continue;
                 }
             };

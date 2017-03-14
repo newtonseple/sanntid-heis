@@ -1,8 +1,3 @@
-#![allow(dead_code)]
-//#![allow(unused_imports)]
-#![allow(unused_variables)]
-//#![allow(non_camel_case_types)]
-//#![allow(safe_extern_statics)]
 #![feature(mpsc_select)]
 
 #[macro_use]

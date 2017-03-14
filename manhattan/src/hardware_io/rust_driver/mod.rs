@@ -1,3 +1,5 @@
+#![allow(dead_code)] // This is a general module, so it is fine if we don't use all of it.
+
 mod c_driver;
 
 pub use self::c_driver::N_FLOORS;
@@ -70,11 +72,4 @@ pub fn get_stop_signal() -> bool {
 
 pub fn get_obstruction_signal() -> bool {
     unsafe { c_driver::elev_get_obstruction_signal() != 0 }
-}
-
-pub fn test_run() -> ! {
-    unsafe {
-        c_driver::test_run();
-    }
-    loop {}
 }

@@ -1,8 +1,7 @@
 extern crate libc;
 
+#[allow(dead_code)] // This is a general module, so it is fine if we don't use all of it.
 extern "C" {
-    //pub static n_floors: libc::c_int;
-
     pub fn elev_init();
 
     pub fn elev_set_motor_direction(dirn: MotorDirection);
@@ -15,8 +14,6 @@ extern "C" {
     pub fn elev_get_floor_sensor_signal() -> libc::c_int;
     pub fn elev_get_stop_signal() -> libc::c_int;
     pub fn elev_get_obstruction_signal() -> libc::c_int;
-
-    pub fn test_run() -> libc::c_int;
 }
 
 #[derive(PartialEq, Serialize, Deserialize, Debug, Copy, Clone)]
@@ -34,5 +31,5 @@ pub enum MotorDirection {
     UP = 1,
 }
 
-//This should be the same as N_FLOORS defined in elev.h
+// This should be the same as N_FLOORS defined in elev.h
 pub const N_FLOORS: i32 = 4;
