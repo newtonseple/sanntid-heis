@@ -14,8 +14,8 @@ use serde;
 use serde_json;
 use net2::UdpBuilder;
 
-const INTERVAL_NS: u32 = 15_000_000; // 15 ms
-const TIMEOUT_NS: u32 = 30_000_000; // 30 ms
+const INTERVAL_NS: u32 = 300_000_000; // 
+const TIMEOUT_NS: u32 = 1_000_000_000; // 
 
 #[derive(Debug)]
 pub struct PeerUpdate<T> {

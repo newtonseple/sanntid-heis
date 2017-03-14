@@ -2,3 +2,5 @@ target
 *.pdb
 *.exe
 *.bk
+
+*.rs~
