@@ -1,3 +1,8 @@
+/*
+This network module was provided on github, and has been slightly modified.
+It handles network communication and peer management.
+*/
+
 use std::sync::mpsc;
 use std::thread;
 
@@ -20,25 +25,22 @@ pub fn start(send_message_rx: mpsc::Receiver<SendMessageCommand>,
              i_am_stuck_rx: mpsc::Receiver<()>,
              message_recieved_tx: mpsc::Sender<Packet<SendMessageCommand, String>>,
              peer_update_tx: mpsc::Sender<PeerUpdate<String>>) {
-    // Creates network thread
-    // Creates PeerTransmitter thread
     thread::spawn(move || {
-        let id = format!("{}", get_localip().expect("failed to get local ip"));
-        //let id = get_localip().expect("failed to get local ip");
-        PeerTransmitter::new(PEER_PORT).expect("Error creating PeerTransmitter").run(i_am_stuck_rx,
-                                                                                     &id);
-    });
+                      let id = format!("{}", get_localip().expect("failed to get local ip"));
+                      PeerTransmitter::new(PEER_PORT)
+                          .expect("Error creating PeerTransmitter")
+                          .run(i_am_stuck_rx, &id);
+                  });
 
-    // Creates PeerReciever thread
     thread::spawn(move || {
                       PeerReceiver::new(PEER_PORT)
                           .expect("Error creating PeerReceiver")
                           .run(peer_update_tx);
                   });
 
+    // Creates a local loopback for when the network is disconnected
     let message_recieved_tx_loopback = message_recieved_tx.clone();
 
-    // Creates BcastTransmitter thread
     thread::spawn(move || {
                       BcastTransmitter::new(BCAST_PORT)
                           .expect("Error creating BcastTransmitter")
@@ -46,7 +48,6 @@ pub fn start(send_message_rx: mpsc::Receiver<SendMessageCommand>,
 
                   });
 
-    // Creates BcastReciever thread
     thread::spawn(move || {
                       BcastReceiver::new(BCAST_PORT)
                           .expect("Error creating BcastReciever")

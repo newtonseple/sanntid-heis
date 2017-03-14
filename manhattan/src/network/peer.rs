@@ -144,7 +144,7 @@ impl PeerTransmitter {
             }
 
             drop(enabled);
-            self.transmit(data).unwrap_or_else(|_| {}); //println!("Transmission of data failed for PeerTransmitter"));
+            self.transmit(data).unwrap_or_else(|_| {});
         }
     }
 }
@@ -188,7 +188,6 @@ impl PeerReceiver {
             let new_id: T = match self.receive() {
                 Ok(id) => id,
                 Err(err) => {
-                    //println!("Recv failed for PeerReceiver. Error: {}", err);
                     continue;
                 }
             };
