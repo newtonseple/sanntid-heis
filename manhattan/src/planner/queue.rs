@@ -39,39 +39,48 @@ impl ElevatorData {
             OrderType::CAB => self.cab_orders[floor as usize] = value,
         }
     }
-    
+
     pub fn get_orders(&self) -> Vec<Order> {
-        let up_order_iter = self.up_orders.iter().enumerate().filter_map(|(floor, order_value)| -> Option<Order> {
-            if *order_value {
-                Some( Order {
-                    order_type: OrderType::UP,
-                    floor: floor as i32,
-                })
-            } else {
-                None
-            }  
-        });
-        let down_order_iter = self.down_orders.iter().enumerate().filter_map(|(floor, order_value)| -> Option<Order> {
-            if *order_value {
-                Some( Order {
-                    order_type: OrderType::DOWN,
-                    floor: floor as i32,
-                })
-            } else {
-                None
-            }  
-        });
-        let cab_order_iter = self.cab_orders.iter().enumerate().filter_map(|(floor, order_value)| -> Option<Order> {
-            if *order_value {
-                Some( Order {
-                    order_type: OrderType::CAB,
-                    floor: floor as i32,
-                })
-            } else {
-                None
-            }  
-        });
-        
+        let up_order_iter = self.up_orders
+            .iter()
+            .enumerate()
+            .filter_map(|(floor, order_value)| -> Option<Order> {
+                if *order_value {
+                    Some(Order {
+                             order_type: OrderType::UP,
+                             floor: floor as i32,
+                         })
+                } else {
+                    None
+                }
+            });
+        let down_order_iter = self.down_orders
+            .iter()
+            .enumerate()
+            .filter_map(|(floor, order_value)| -> Option<Order> {
+                if *order_value {
+                    Some(Order {
+                             order_type: OrderType::DOWN,
+                             floor: floor as i32,
+                         })
+                } else {
+                    None
+                }
+            });
+        let cab_order_iter = self.cab_orders
+            .iter()
+            .enumerate()
+            .filter_map(|(floor, order_value)| -> Option<Order> {
+                if *order_value {
+                    Some(Order {
+                             order_type: OrderType::CAB,
+                             floor: floor as i32,
+                         })
+                } else {
+                    None
+                }
+            });
+
         up_order_iter.chain(down_order_iter.chain(cab_order_iter)).collect()
     }
 
@@ -103,31 +112,32 @@ impl ElevatorData {
         if self.direction == ServiceDirection::DOWN {
             if self.cab_orders[self.floor as usize] == true ||
                self.down_orders[self.floor as usize] == true {
-                return LocalCommandMessage::StopForOrder{order_type: OrderType::DOWN}
+                return LocalCommandMessage::StopForOrder { order_type: OrderType::DOWN };
             } else if self.search_below(self.floor - 1) == true {
                 return LocalCommandMessage::GoDown;
             } else if self.up_orders[self.floor as usize] == true {
-                return LocalCommandMessage::StopForOrder{order_type: OrderType::UP}
+                return LocalCommandMessage::StopForOrder { order_type: OrderType::UP };
             } else {
                 return LocalCommandMessage::DoNothing;
             }
         } else if self.direction == ServiceDirection::UP {
             if self.cab_orders[self.floor as usize] == true ||
                self.up_orders[self.floor as usize] == true {
-                return LocalCommandMessage::StopForOrder{order_type: OrderType::UP}
+                return LocalCommandMessage::StopForOrder { order_type: OrderType::UP };
             } else if self.search_above(self.floor + 1) == true {
                 return LocalCommandMessage::GoUp;
             } else if self.down_orders[self.floor as usize] == true {
-                return LocalCommandMessage::StopForOrder{order_type: OrderType::DOWN}
+                return LocalCommandMessage::StopForOrder { order_type: OrderType::DOWN };
             } else {
-                return LocalCommandMessage::DoNothing
+                return LocalCommandMessage::DoNothing;
             }
-        } else { // Lift is idle
+        } else {
+            // Lift is idle
             if self.cab_orders[self.floor as usize] == true ||
                self.down_orders[self.floor as usize] == true {
-                return LocalCommandMessage::StopForOrder{order_type: OrderType::DOWN}
+                return LocalCommandMessage::StopForOrder { order_type: OrderType::DOWN };
             } else if self.up_orders[self.floor as usize] == true {
-                return LocalCommandMessage::StopForOrder{order_type: OrderType::UP}
+                return LocalCommandMessage::StopForOrder { order_type: OrderType::UP };
             } else if self.search_below(self.floor - 1) == true {
                 return LocalCommandMessage::GoDown;
             } else if self.search_above(self.floor + 1) == true {

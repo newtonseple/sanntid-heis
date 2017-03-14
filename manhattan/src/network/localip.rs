@@ -10,10 +10,10 @@ lazy_static! {
 pub fn get_localip() -> Result<String> {
     let mut local_ip = LOCAL_IP.lock().unwrap();
     let old_ip = local_ip.clone();
-    
-    
+
+
     let id_suffix = if let Some(index) = args().position(|s| s == "--id") {
-        args().nth(index+1).expect("id expected after --id")
+        args().nth(index + 1).expect("id expected after --id")
     } else {
         "0".to_string()
     };
@@ -23,9 +23,9 @@ pub fn get_localip() -> Result<String> {
             let socket = try!(TcpStream::connect("8.8.8.8:53"));
             let ip = try!(socket.local_addr()).ip();
             *local_ip = Some(ip);
-            Ok((ip.to_string()+":"+&id_suffix))
+            Ok((ip.to_string() + ":" + &id_suffix))
         }
-        Some(ip) => Ok((ip.to_string()+":"+&id_suffix)),
+        Some(ip) => Ok((ip.to_string() + ":" + &id_suffix)),
     }
 }
 

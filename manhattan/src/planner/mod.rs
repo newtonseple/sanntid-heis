@@ -33,7 +33,8 @@ pub fn start(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
              add_order_tx: mpsc::Sender<Order>,
              add_order_rx: mpsc::Receiver<Order>,
              peer_update_rx: mpsc::Receiver<network::PeerUpdate<String>>,
-             message_recieved_rx: mpsc::Receiver<network::Packet<network::SendMessageCommand, String>>,
+             message_recieved_rx: mpsc::Receiver<network::Packet<network::SendMessageCommand,
+                                                                 String>>,
              local_command_request_rx: mpsc::Receiver<LocalCommandRequestMessage>)
              -> thread::JoinHandle<()> {
     thread::Builder::new().name("planner".to_string()).spawn(move || {

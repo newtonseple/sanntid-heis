@@ -15,9 +15,7 @@ use planner;
 use local_controller;
 
 pub enum HwCommandMessage {
-    SetFloorIndicator {
-        floor: i32,
-    },
+    SetFloorIndicator { floor: i32 },
     SetButtonLamp {
         button_type: OrderType,
         floor: i32,

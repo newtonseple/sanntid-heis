@@ -20,46 +20,37 @@ const BCAST_PORT: u16 = 5176;
 pub fn start(send_message_rx: mpsc::Receiver<SendMessageCommand>,
              i_am_stuck_rx: mpsc::Receiver<()>,
              message_recieved_tx: mpsc::Sender<Packet<SendMessageCommand, String>>,
-             peer_update_tx: mpsc::Sender<PeerUpdate<String>>)
-             -> thread::JoinHandle<()> {
+             peer_update_tx: mpsc::Sender<PeerUpdate<String>>) {
     // Creates network thread
-    thread::Builder::new().name("network".to_string()).spawn(move || {
-        // Creates PeerTransmitter thread
-        thread::spawn(move || { 
-            let id = format!("{}", get_localip().expect("failed to get local ip"));
-            //let id = get_localip().expect("failed to get local ip");
-            PeerTransmitter::new(PEER_PORT)
-                .expect("Error creating PeerTransmitter")
-                .run(i_am_stuck_rx, &id);
-        });
+    // Creates PeerTransmitter thread
+    thread::spawn(move || {
+        let id = format!("{}", get_localip().expect("failed to get local ip"));
+        //let id = get_localip().expect("failed to get local ip");
+        PeerTransmitter::new(PEER_PORT).expect("Error creating PeerTransmitter").run(i_am_stuck_rx,
+                                                                                     &id);
+    });
 
-        // Creates PeerReciever thread
-        thread::spawn(move || {
-            PeerReceiver::new(PEER_PORT)
-                .expect("Error creating PeerReceiver")
-                .run(peer_update_tx);
-        });
-        
-        let message_recieved_tx_loopback = message_recieved_tx.clone();
+    // Creates PeerReciever thread
+    thread::spawn(move || {
+                      PeerReceiver::new(PEER_PORT)
+                          .expect("Error creating PeerReceiver")
+                          .run(peer_update_tx);
+                  });
 
-        // Creates BcastTransmitter thread
-        thread::spawn(move || {
-            BcastTransmitter::new(BCAST_PORT)
-                .expect("Error creating BcastTransmitter")
-                .run(send_message_rx, message_recieved_tx_loopback);
+    let message_recieved_tx_loopback = message_recieved_tx.clone();
 
-        });
+    // Creates BcastTransmitter thread
+    thread::spawn(move || {
+                      BcastTransmitter::new(BCAST_PORT)
+                          .expect("Error creating BcastTransmitter")
+                          .run(send_message_rx, message_recieved_tx_loopback);
 
-        // Creates BcastReciever thread
-        thread::spawn(move || {
-            BcastReceiver::new(BCAST_PORT)
-                .expect("Error creating BcastReciever")
-                .run(message_recieved_tx);
-        });
+                  });
 
-        loop {
-           
-            thread::sleep(Duration::from_millis(5000));
-        }
-    }).expect("Failed to start thread")
+    // Creates BcastReciever thread
+    thread::spawn(move || {
+                      BcastReceiver::new(BCAST_PORT)
+                          .expect("Error creating BcastReciever")
+                          .run(message_recieved_tx);
+                  });
 }

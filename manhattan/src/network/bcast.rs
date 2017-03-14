@@ -34,8 +34,10 @@ pub enum SendMessageCommand {
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]
-pub struct Packet<T, G> where T: serde::ser::Serialize, 
-                          G: serde::ser::Serialize {
+pub struct Packet<T, G>
+    where T: serde::ser::Serialize,
+          G: serde::ser::Serialize
+{
     pub id: G,
     pub data: T,
 }
@@ -65,20 +67,26 @@ impl BcastTransmitter {
         Ok(())
     }
 
-    pub fn run<T>(self, bcast_rx: mpsc::Receiver<T>, message_recieved_tx: mpsc::Sender<Packet<T, String>>) -> !
+    pub fn run<T>(self,
+                  bcast_rx: mpsc::Receiver<T>,
+                  message_recieved_tx: mpsc::Sender<Packet<T, String>>)
+                  -> !
         where T: serde::ser::Serialize + std::clone::Clone
     {
         let self_id = get_localip().unwrap();
         loop {
             let msg_data = bcast_rx.recv().unwrap();
-            let msg = Packet{id: self_id.to_owned(), data: msg_data};
-            
+            let msg = Packet {
+                id: self_id.to_owned(),
+                data: msg_data,
+            };
+
             message_recieved_tx.send(msg.clone()).expect("Loopback transmission failed");
-            
-            for _ in 0..N_REDUNDANCY{
-                self.transmit(&msg).unwrap_or_else(|_| {});//println!("Transmission of data failed for Bcast"));
+
+            for _ in 0..N_REDUNDANCY {
+                self.transmit(&msg).unwrap_or_else(|_| {}); //println!("Transmission of data failed for Bcast"));
                 sleep(Duration::from_millis(1))
-            }/*
+            } /*
             sleep(Duration::from_millis(20));
             for _ in 0..N_REDUNDANCY{
                 self.transmit(&msg).unwrap_or_else(|_| {});//println!("Transmission of data failed for Bcast"));

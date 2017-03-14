@@ -36,7 +36,8 @@ fn main() {
     let (local_command_tx, local_command_rx) = mpsc::sync_channel(0);
     let (local_command_request_tx, local_command_request_rx) = mpsc::sync_channel(0);
 
-    let hardware_io_thread = hardware_io::start(local_event_tx.clone(), add_order_tx.clone(), hw_command_rx); //DRIVER IX COMPLETE
+    let hardware_io_thread =
+        hardware_io::start(local_event_tx.clone(), add_order_tx.clone(), hw_command_rx); //DRIVER IX COMPLETE
     let timer_thread = timer::start(local_event_tx.clone());
     let planner_thread = planner::start(hw_command_tx.clone(), //PLANNER IX COMPLETE
                                         send_message_tx.clone(),
@@ -46,14 +47,17 @@ fn main() {
                                         peer_update_rx,
                                         message_recieved_rx,
                                         local_command_request_rx);
-    let local_controller_thread = local_controller::start(hw_command_tx.clone(), 
-                                                          send_message_tx.clone(), 
+    let local_controller_thread = local_controller::start(hw_command_tx.clone(),
+                                                          send_message_tx.clone(),
                                                           local_command_request_tx,
-                                                          i_am_stuck_tx, 
+                                                          i_am_stuck_tx,
                                                           local_command_rx, //LOCAL CTRL IX COMPLETE
-                                                          local_event_rx); 
+                                                          local_event_rx);
 
-    let network_thread = network::start(send_message_rx, i_am_stuck_rx, message_recieved_tx, peer_update_tx);
+    network::start(send_message_rx,
+                   i_am_stuck_rx,
+                   message_recieved_tx,
+                   peer_update_tx);
 
     /*
     let msg_test: hardware_io::HwCommandMessage =
@@ -68,7 +72,6 @@ fn main() {
 
     hardware_io_thread.join().unwrap();
     timer_thread.join().unwrap();
-    network_thread.join().unwrap();
     planner_thread.join().unwrap();
     local_controller_thread.join().unwrap();
     panic!("Exited the main thread!?");
