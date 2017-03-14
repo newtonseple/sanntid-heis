@@ -1,3 +1,10 @@
+/*
+This module is responsible for reacting to outside requests for
+new orders (buttons), delegating them, keeping track of all the
+elevator states in a map of ElevatorData structs, as well as
+distribution of possible lost orders when a lost peer reconnects.
+*/
+
 use std::sync::mpsc;
 use std::thread;
 
@@ -41,34 +48,36 @@ pub fn run(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
         let mut elevator_data_map = HashMap::new();
         loop {
             select! {
+                // the add_order channel contains orders for delegation,
+                // and are handled here
                 add_order_result = add_order_rx.recv() => {
                     let order = add_order_result.unwrap();
                     let local_id = network::get_localip().expect("could not get local ip");
-                    //println!("got order button, {}. Delegating.", order.floor);
-                    
                     let (best_id, _): (&String, &ElevatorData) = 
                         match order.order_type {
                             OrderType::CAB => (&local_id, elevator_data_map.get(&local_id).expect("could not get local lift data")),
                             _ => {
                                 elevator_data_map.iter()
-                                    .filter(|&(id, elevator_data): &(&String, &ElevatorData)| elevator_data.alive == true)
-                                    .min_by_key(|&(id, elevator_data): &(&String, &ElevatorData)| {
+                                    .filter(|&(_, elevator_data): &(&String, &ElevatorData)| elevator_data.alive == true)
+                                    .min_by_key(|&(_, elevator_data): &(&String, &ElevatorData)| {
                                         elevator_data.get_order_cost(order.floor, order.order_type)
                                     }).expect ("Could not find an elevator to handle the order")
                             }
                         };
-
-                    
-                    //println!("\"Optimal\" elevator found: {}", best_id);
                     send_message_tx.send(network::SendMessageCommand::NewOrder {
                         order_type: order.order_type,
                         floor: order.floor,
                         id: (*best_id).clone(),
-                    }).expect("unable to send 486983417965827346");
+                    }).expect("unable to send");
                 },
+
                 peer_update_result = peer_update_rx.recv() => {
                     let peer_update = peer_update_result.unwrap();
                     println!("{}", peer_update);
+
+                    // If we are notified of a new/returning peer,
+                    // give them the order table and make sure
+                    // they have an entry in the map.
                     if let Some(id) = peer_update.new {
                         if elevator_data_map.contains_key(&id){
                             elevator_data_map.get_mut(&id).unwrap().alive = true;
@@ -86,26 +95,27 @@ pub fn run(hw_command_tx: mpsc::Sender<hardware_io::HwCommandMessage>,
                                     ).expect("could not send orders 989889");
                                 }
                             }
-                            
                         } else {
                             elevator_data_map.insert(id.clone(), ElevatorData::new());
                             println!("Added new elevator_data for: {}", id);
                         }
                     }
+
+                    // If we loose a peer, their orders will be redelegated
                     for id in peer_update.lost {
                         elevator_data_map.get_mut(&id).unwrap().alive = false;
                         println!("Peer died: {}", id);
-
-                        // Redelegation of orders belonging to dead peer
+                        
                         for order in (*elevator_data_map.get(&id).unwrap()).get_orders().iter()
                             .filter(|&order| order.order_type != OrderType::CAB)
                         {
                             add_order_tx.send(*order).expect("Failed to queue order for new assignment");
                         }
-
                     }
                     
                 },
+
+
                 message_recieved_result = message_recieved_rx.recv() => {
                     let message_recieved = message_recieved_result.expect("message_recieved_result failed");
                     //println!("Got net message! {:?}", message_recieved);

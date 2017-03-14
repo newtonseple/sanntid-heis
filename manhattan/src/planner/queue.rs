@@ -2,6 +2,10 @@ use hardware_io::{OrderType, N_FLOORS};
 use local_controller::LocalCommandMessage;
 use super::Order;
 
+// ServiceDirection is separate from MotorDirection.
+// One represents the direction in which orders are 
+// handled, while the other represents the physical
+// direction of a motor.
 #[derive(Debug, PartialEq, Copy, Clone)]
 #[derive(Serialize, Deserialize)]
 pub enum ServiceDirection {
@@ -17,7 +21,7 @@ pub struct ElevatorData {
     cab_orders: [bool; N_FLOORS as usize],
     floor: i32,
     direction: ServiceDirection,
-    pub alive: bool, //Note: This can safely be public. A setter/getter would in this case _only_ add complexity, and would not further minimize accessibility to the data members.
+    pub alive: bool,
 }
 
 impl ElevatorData {
@@ -40,6 +44,9 @@ impl ElevatorData {
         }
     }
 
+    // This function iterates through all the possible orders
+    // and returns a vector of those for which this elevator
+    // is responsible.
     pub fn get_orders(&self) -> Vec<Order> {
         let up_order_iter = self.up_orders
             .iter()

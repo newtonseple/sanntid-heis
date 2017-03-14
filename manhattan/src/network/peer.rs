@@ -187,7 +187,7 @@ impl PeerReceiver {
 
             let new_id: T = match self.receive() {
                 Ok(id) => id,
-                Err(err) => {
+                Err(_) => {
                     continue;
                 }
             };
