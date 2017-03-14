@@ -26,10 +26,10 @@ pub enum HwCommandMessage {
 }
 
 
-pub fn start(local_event_tx: mpsc::Sender<local_controller::LocalEventMessage>,
-             add_order_tx: mpsc::Sender<planner::Order>,
-             hw_command_rx: mpsc::Receiver<HwCommandMessage>)
-             -> thread::JoinHandle<()> {
+pub fn run(local_event_tx: mpsc::Sender<local_controller::LocalEventMessage>,
+           add_order_tx: mpsc::Sender<planner::Order>,
+           hw_command_rx: mpsc::Receiver<HwCommandMessage>)
+           -> thread::JoinHandle<()> {
     thread::Builder::new()
         .name("hardware_io".to_string())
         .spawn(move || {

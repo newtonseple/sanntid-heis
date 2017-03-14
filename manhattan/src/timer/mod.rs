@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use local_controller;
 
-pub fn start(timer_tx: Sender<local_controller::LocalEventMessage>) -> thread::JoinHandle<()> {
+pub fn run(timer_tx: Sender<local_controller::LocalEventMessage>) -> thread::JoinHandle<()> {
     thread::Builder::new()
         .name("timer".to_string())
         .spawn(move || loop {
