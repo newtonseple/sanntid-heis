@@ -21,7 +21,19 @@ procedure exercise7 is
             ------------------------------------------
             -- PART 3: Complete the exit protocol here
             ------------------------------------------
-            Finished_Gate_Open := True;
+            --if Finished'Count = N-1 then
+                Finished_Gate_Open := True;
+            --end if;
+
+            if Aborted = True then
+                Should_Commit := False;
+            end if;
+
+            if Finished'Count = 0 then
+                Aborted := False;
+                Finished_Gate_Open := False;
+            end if;
+
         end Finished;
 
         procedure Signal_Abort is
