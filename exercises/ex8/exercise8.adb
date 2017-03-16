@@ -1,7 +1,7 @@
     with Ada.Text_IO, Ada.Integer_Text_IO, Ada.Numerics.Float_Random;
 use  Ada.Text_IO, Ada.Integer_Text_IO, Ada.Numerics.Float_Random;
 
-procedure exercise7 is
+procedure exercise8 is
 
     Count_Failed    : exception;    -- Exception to be raised when counting fails
     Gen             : Generator;    -- Random number generator
@@ -21,9 +21,10 @@ procedure exercise7 is
             ------------------------------------------
             -- PART 3: Complete the exit protocol here
             ------------------------------------------
-            --if Finished'Count = N-1 then
+            if Finished'Count = N then
                 Finished_Gate_Open := True;
-            --end if;
+                Should_Commit := True;
+            end if;
 
             if Aborted = True then
                 Should_Commit := False;
