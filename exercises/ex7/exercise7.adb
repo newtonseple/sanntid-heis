@@ -21,9 +21,10 @@ procedure exercise7 is
             ------------------------------------------
             -- PART 3: Complete the exit protocol here
             ------------------------------------------
-            --if Finished'Count = N-1 then
+            if Finished'Count = N-1 then
                 Finished_Gate_Open := True;
-            --end if;
+                Should_Commit := True;
+            end if;
 
             if Aborted = True then
                 Should_Commit := False;
