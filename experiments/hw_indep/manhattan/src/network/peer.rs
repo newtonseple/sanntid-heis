@@ -7,25 +7,26 @@ use std::sync::mpsc;
 use std::time::{Duration, Instant};
 use std::str::from_utf8;
 use std::collections::HashMap;
-use std::hash::Hash;
+use std::hash::Hash;    
 use std::fmt;
 
 use serde;
 use serde_json;
 use net2::UdpBuilder;
 
-const INTERVAL_NS: u32 = 300_000_000; // 
-const TIMEOUT_NS: u32 = 1_000_000_000; // 
+const INTERVAL_NS: u32 = 300_000_000; // 300 ms
+const TIMEOUT_NS: u32 = 1_000_000_000; // 1000 ms
+const N_REDUNDANCY: u32 = 4;
 
 #[derive(Debug)]
 pub struct PeerUpdate<T> {
-    peers: Vec<T>,
-    new: Option<T>,
-    lost: Vec<T>,
+    pub peers: Vec<T>,
+    pub new: Option<T>,
+    pub lost: Vec<T>,
 }
 
-impl<T> PeerUpdate<T> 
-    where T: Ord,
+impl<T> PeerUpdate<T>
+    where T: Ord
 {
     pub fn new() -> Self {
         PeerUpdate {
@@ -61,25 +62,25 @@ impl<T: fmt::Display> fmt::Display for PeerUpdate<T> {
             1 => try!(write!(f, "\tpeers: [{}]\n", self.peers[0])),
             n @ _ => {
                 try!(write!(f, "\tpeers: [{},\n", self.peers[0]));
-                for i in 1..n-1 {
+                for i in 1..n - 1 {
                     try!(write!(f, "\t        {},\n", self.peers[i]));
                 }
-                try!(write!(f, "\t        {}]\n", self.peers[n-1]));
+                try!(write!(f, "\t        {}]\n", self.peers[n - 1]));
             }
         }
         match self.new {
             Some(ref new) => try!(write!(f, "\tnew:   [{}]\n", new)),
-            None => try!(write!(f, "\tnew:   [None]\n"))
+            None => try!(write!(f, "\tnew:   [None]\n")),
         }
         match self.lost.len() {
             0 => try!(write!(f, "\tlost:  []\n")),
-            1 => try!(write!(f, "\tlost:  [{}]\n", self.peers[0])),
+            1 => try!(write!(f, "\tlost:  [{}]\n", self.lost[0])),
             n @ _ => {
-                try!(write!(f, "\tlost:  [{},\n", self.peers[0]));
-                for i in 1..n-1 {
-                    try!(write!(f, "\t        {},\n", self.peers[i]));
+                try!(write!(f, "\tlost:  [{},\n", self.lost[0]));
+                for i in 1..n - 1 {
+                    try!(write!(f, "\t        {},\n", self.lost[i]));
                 }
-                try!(write!(f, "\t        {}]\n", self.peers[n-1]));
+                try!(write!(f, "\t        {}]\n", self.lost[n - 1]));
             }
         }
         Ok(())
@@ -117,25 +118,33 @@ impl PeerTransmitter {
         *enabled = false;
     }
 
-    pub fn transmit<'a, T>(&self, data: &'a T) -> io::Result<()> 
-        where T: serde::ser::Serialize,
+    pub fn transmit<'a, T>(&self, data: &'a T) -> io::Result<()>
+        where T: serde::ser::Serialize
     {
         let serialized = serde_json::to_string(&data).unwrap();
-        try!(self.conn.send(serialized.as_bytes()));
+        for _ in 0..N_REDUNDANCY {
+            try!(self.conn.send(serialized.as_bytes()));
+        }
+        
         Ok(())
     }
 
-    pub fn run<'a, T>(self, data: &'a T) -> !
-        where T: serde::ser::Serialize,
-    {
+    pub fn run<'a, T>(self, i_am_stuck_rx: mpsc::Receiver<()>, data: &'a T) -> !
+        where T: serde::ser::Serialize {
         loop {
             thread::sleep(Duration::new(0, INTERVAL_NS));
+            
+            if let Some(_) = i_am_stuck_rx.try_iter().last() {
+                thread::sleep(Duration::from_millis(1000));
+            }
+
             let enabled = self.enabled.lock().unwrap();
             if !*enabled {
                 continue;
             }
+
             drop(enabled);
-            self.transmit(data).expect("Transmission of data failed for PeerTransmitter");
+            self.transmit(data).unwrap_or_else(|_| {});//println!("Transmission of data failed for PeerTransmitter"));
         }
     }
 }
@@ -154,33 +163,32 @@ impl PeerReceiver {
             try!(socket.set_broadcast(true));
             socket
         };
-        Ok(PeerReceiver{
-            conn: conn,
-        })
+        Ok(PeerReceiver { conn: conn })
     }
 
     pub fn receive<T>(&self) -> io::Result<T>
-        where T: serde::de::Deserialize, 
+        where T: serde::de::Deserialize
     {
         let mut buf = [0u8; 256];
         let (amt, _) = try!(self.conn.recv_from(&mut buf));
         let msg = from_utf8(&buf[..amt]).unwrap();
-        Ok(serde_json::from_str(&msg).unwrap())
+        Ok(serde_json::from_str(&msg).expect(format!("deser failed: {}",msg).as_str()))
     }
 
     pub fn run<T>(self, update_tx: mpsc::Sender<PeerUpdate<T>>) -> !
-        where T: serde::de::Deserialize + Hash + Eq + Clone + Ord,
+        where T: serde::de::Deserialize + Hash + Eq + Clone + Ord
     {
         let mut last_seen = HashMap::new();
         loop {
             let mut peer_update = PeerUpdate::new();
             let mut updated = false;
-            
+
             self.conn.set_read_timeout(Some(Duration::new(0, TIMEOUT_NS))).unwrap();
+
             let new_id: T = match self.receive() {
                 Ok(id) => id,
                 Err(err) => {
-                    println!("Recv failed for PeerReceiver. Error: {}", err);
+                    //println!("Recv failed for PeerReceiver. Error: {}", err);
                     continue;
                 }
             };
@@ -209,7 +217,7 @@ impl PeerReceiver {
                     peer_update.add_peers(id.clone());
                 }
                 peer_update.sort();
-                update_tx.send(peer_update).unwrap();
+                update_tx.send(peer_update).expect("Could not send peer update");
             }
         }
     }
@@ -233,7 +241,7 @@ mod tests {
             transmitter.run(&id);
         });
         let (tx, rx) = channel::<PeerUpdate<String>>();
-        thread::spawn(move|| {
+        thread::spawn(move || {
             let receiver = PeerReceiver::new(port).unwrap();
             receiver.run(tx);
         });
@@ -246,4 +254,3 @@ mod tests {
         }
     }
 }
-

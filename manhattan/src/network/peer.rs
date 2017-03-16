@@ -1,4 +1,3 @@
-
 use std::io;
 use std::thread;
 use std::net::UdpSocket;
@@ -7,15 +6,16 @@ use std::sync::mpsc;
 use std::time::{Duration, Instant};
 use std::str::from_utf8;
 use std::collections::HashMap;
-use std::hash::Hash;    
+use std::hash::Hash;
 use std::fmt;
 
 use serde;
 use serde_json;
 use net2::UdpBuilder;
 
-const INTERVAL_NS: u32 = 15_000_000; // 15 ms
-const TIMEOUT_NS: u32 = 30_000_000; // 30 ms
+const INTERVAL_NS: u32 = 300_000_000; // 300 ms
+const TIMEOUT_NS: u32 = 1_000_000_000; // 1000 ms
+const N_REDUNDANCY: u32 = 4;
 
 #[derive(Debug)]
 pub struct PeerUpdate<T> {
@@ -102,9 +102,9 @@ impl PeerTransmitter {
             socket
         };
         Ok(PeerTransmitter {
-            conn: conn,
-            enabled: Mutex::new(true),
-        })
+               conn: conn,
+               enabled: Mutex::new(true),
+           })
     }
 
     pub fn enable(&self) {
@@ -121,15 +121,19 @@ impl PeerTransmitter {
         where T: serde::ser::Serialize
     {
         let serialized = serde_json::to_string(&data).unwrap();
-        try!(self.conn.send(serialized.as_bytes()));
+        for _ in 0..N_REDUNDANCY {
+            try!(self.conn.send(serialized.as_bytes()));
+        }
+
         Ok(())
     }
 
     pub fn run<'a, T>(self, i_am_stuck_rx: mpsc::Receiver<()>, data: &'a T) -> !
-        where T: serde::ser::Serialize {
+        where T: serde::ser::Serialize
+    {
         loop {
             thread::sleep(Duration::new(0, INTERVAL_NS));
-            
+
             if let Some(_) = i_am_stuck_rx.try_iter().last() {
                 thread::sleep(Duration::from_millis(1000));
             }
@@ -140,7 +144,7 @@ impl PeerTransmitter {
             }
 
             drop(enabled);
-            self.transmit(data).expect("Transmission of data failed for PeerTransmitter");
+            self.transmit(data).unwrap_or_else(|_| {});
         }
     }
 }
@@ -168,7 +172,7 @@ impl PeerReceiver {
         let mut buf = [0u8; 256];
         let (amt, _) = try!(self.conn.recv_from(&mut buf));
         let msg = from_utf8(&buf[..amt]).unwrap();
-        Ok(serde_json::from_str(&msg).expect(format!("deser failed: {}",msg).as_str()))
+        Ok(serde_json::from_str(&msg).expect(format!("deser failed: {}", msg).as_str()))
     }
 
     pub fn run<T>(self, update_tx: mpsc::Sender<PeerUpdate<T>>) -> !
@@ -183,12 +187,11 @@ impl PeerReceiver {
 
             let new_id: T = match self.receive() {
                 Ok(id) => id,
-                Err(err) => {
-                    //println!("Recv failed for PeerReceiver. Error: {}", err);
+                Err(_) => {
                     continue;
                 }
             };
-            
+
             // Adding new connection
             if !last_seen.contains_key(&new_id) {
                 peer_update.set_new(new_id.clone());
@@ -232,15 +235,18 @@ mod tests {
     fn it_works() {
         let port = 9887;
         thread::spawn(move || {
-            let id = format!("{}:{}", get_localip().unwrap(), "unique");
-            let transmitter = PeerTransmitter::new(port).unwrap();
-            transmitter.run(&id);
-        });
+                          let id = format!("{}:{}", get_localip().unwrap(), "unique");
+                          let transmitter = PeerTransmitter::new(port).unwrap();
+                          transmitter.run(&id);
+                      });
+
         let (tx, rx) = channel::<PeerUpdate<String>>();
         thread::spawn(move || {
-            let receiver = PeerReceiver::new(port).unwrap();
-            receiver.run(tx);
-        });
+                          let receiver = PeerReceiver::new(port).unwrap();
+                          receiver.run(tx);
+                      });
+
+        // Send multiple times for redundancy
         for _ in 0..10 {
             let update = rx.recv().unwrap();
             println!("Peer update");

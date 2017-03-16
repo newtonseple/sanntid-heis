@@ -1,12 +1,14 @@
-// This is a safe rust wrapper for the unsafe bindings for the C driver supplied on github.
-
-#![allow(dead_code)] // This is a general module, so it is fine if we don't use all of it.
-
 mod c_driver;
 
+
 pub use self::c_driver::N_FLOORS;
+
 pub use self::c_driver::OrderType;
 pub use self::c_driver::MotorDirection;
+
+//pub type OrderType = elev_button_type_t;
+
+//pub type MotorDirection = elev_motor_direction_t;
 
 //TODO: change ifs to asserts
 
@@ -33,14 +35,11 @@ pub fn set_button_lamp(button: OrderType, floor: i32, value: bool) {
 }
 
 pub fn set_floor_indicator(floor: i32) {
-    if floor >= 0 && floor < N_FLOORS as i32 {
-        unsafe {
-            c_driver::elev_set_floor_indicator(floor);
-
-        }
-    } else {
-        panic!("Tried to set the floor in {}th floor (floor not existing)",
-               floor)
+    assert!(floor >= 0 && floor < N_FLOORS as i32,
+            "Tried to set the floor in {}th floor (floor not existing)",
+            floor);
+    unsafe {
+        c_driver::elev_set_floor_indicator(floor);
     }
 }
 
@@ -56,6 +55,7 @@ pub fn set_stop_lamp(value: bool) {
     }
 }
 
+
 pub fn get_button_signal(button: OrderType, floor: i32) -> bool {
     if floor >= 0 && floor < N_FLOORS as i32 {
         unsafe { c_driver::elev_get_button_signal(button, floor) != 0 }
@@ -65,7 +65,7 @@ pub fn get_button_signal(button: OrderType, floor: i32) -> bool {
     }
 }
 
-// Returns the floor (0-indexed) or None
+// returns the floor (0-indexed) or None
 pub fn get_floor_sensor_signal() -> Option<i32> {
     let result = unsafe { c_driver::elev_get_floor_sensor_signal() };
     if result != -1 { Some(result) } else { None }
@@ -77,4 +77,12 @@ pub fn get_stop_signal() -> bool {
 
 pub fn get_obstruction_signal() -> bool {
     unsafe { c_driver::elev_get_obstruction_signal() != 0 }
+}
+
+
+pub fn test_run() -> ! {
+    unsafe {
+        c_driver::test_run();
+    }
+    loop {}
 }

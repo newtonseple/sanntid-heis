@@ -1,6 +1,6 @@
 use std;
 use std::io;
-use std::net::UdpSocket;
+use std::net::{UdpSocket, IpAddr};
 use std::str::from_utf8;
 use std::sync::mpsc;
 use std::thread::sleep;
@@ -14,7 +14,7 @@ use hardware_io;
 use network::get_localip;
 use planner::ServiceDirection;
 
-const N_REDUNDANCY: u32 = 8; // Number of packets per packet for redundancy
+const N_REDUNDANCY: u32 = 8; //15 packets over three send times
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum SendMessageCommand {
@@ -23,21 +23,19 @@ pub enum SendMessageCommand {
         floor: i32,
     },
     StateUpdate {
-        direction: ServiceDirection,
+        direction: ServiceDirection, // TODO: Change to ServiceDirection
         floor: i32,
     },
     NewOrder {
         order_type: hardware_io::OrderType,
         floor: i32,
         id: String,
-    },
+    }, // usize for use in array indexing, other types might be more appropriate
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]
-pub struct Packet<T, G>
-    where T: serde::ser::Serialize,
-          G: serde::ser::Serialize
-{
+pub struct Packet<T, G> where T: serde::ser::Serialize, 
+                          G: serde::ser::Serialize {
     pub id: G,
     pub data: T,
 }
@@ -67,27 +65,27 @@ impl BcastTransmitter {
         Ok(())
     }
 
-    pub fn run<T>(self,
-                  bcast_rx: mpsc::Receiver<T>,
-                  message_recieved_tx: mpsc::Sender<Packet<T, String>>)
-                  -> !
+    pub fn run<T>(self, bcast_rx: mpsc::Receiver<T>, message_recieved_tx: mpsc::Sender<Packet<T, String>>) -> !
         where T: serde::ser::Serialize + std::clone::Clone
     {
         let self_id = get_localip().unwrap();
         loop {
             let msg_data = bcast_rx.recv().unwrap();
-            let msg = Packet {
-                id: self_id.to_owned(),
-                data: msg_data,
-            };
-
-            //Send the message to the loopback channel, in case network is out.
+            let msg = Packet{id: self_id.to_owned(), data: msg_data};
+            
             message_recieved_tx.send(msg.clone()).expect("Loopback transmission failed");
-
-            for _ in 0..N_REDUNDANCY {
-                self.transmit(&msg).unwrap_or_else(|_| {});
-                sleep(Duration::from_millis(1))
+            for _ in 0..N_REDUNDANCY{
+                self.transmit(&msg).unwrap_or_else(|_| {});//println!("Transmission of data failed for Bcast"));
+                sleep(Duration::from_millis(2))
+            }/*
+            sleep(Duration::from_millis(20));
+            for _ in 0..N_REDUNDANCY{
+                self.transmit(&msg).unwrap_or_else(|_| {});//println!("Transmission of data failed for Bcast"));
             }
+            sleep(Duration::from_millis(20));
+            for _ in 0..N_REDUNDANCY{
+                self.transmit(&msg).unwrap_or_else(|_| {});//println!("Transmission of data failed for Bcast"));
+            }*/
         }
     }
 }
@@ -123,7 +121,8 @@ impl BcastReceiver {
         loop {
             let msg: T = match self.receive() {
                 Ok(msg) => msg,
-                Err(_) => {
+                Err(err) => {
+                    //println!("Recv failed for BcastReceiver. Error: {}", err);
                     continue;
                 }
             };
