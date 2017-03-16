@@ -4,3 +4,9 @@ target
 *.bk
 
 *.rs~
+
+*.adb
+
+*.ali
+
+*.o
